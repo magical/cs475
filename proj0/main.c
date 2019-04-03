@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
 	fprintf(stderr, "Using %d threads,\n", numt);
 
 	double maxMegaMults = 0.;
+	double totalMegaMults = 0.;
 	for(int t = 0; t <NUMTRIES; t++) {
 		double time0 = omp_get_wtime();
 		#pragma omp parallel for default(none) shared(A,B,C)
@@ -35,9 +36,11 @@ int main(int argc, char** argv) {
 		if (megaMults > maxMegaMults) {
 			maxMegaMults = megaMults;
 		}
+		totalMegaMults += megaMults;
 	}
 
 	printf( "Peak Performance = %8.2lf MegaMults/Sec\n", maxMegaMults );
+	printf( "Average Performance = %8.2lf MegaMults/Sec\n", totalMegaMults / NUMTRIES );
 
 	return 0;
 
