@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
 	double maxMegaMults = 0.;
 	for(int t = 0; t <NUMTRIES; t++) {
 		double time0 = omp_get_wtime();
-#pragma omp parallel for
+		#pragma omp parallel for default(none) shared(A,B,C)
 		for (int i = 0; i <  ARRAYSIZE; i++) {
 			C[i] = A[i] *B[i];
 		}
