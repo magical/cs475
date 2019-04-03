@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#define NUMT 1
 #define ARRAYSIZE 4096
 #define NUMTRIES 100000
 
@@ -10,14 +9,19 @@ double A[ARRAYSIZE];
 double B[ARRAYSIZE];
 double C[ARRAYSIZE];
 
-int main() {
+int main(int argc, char** argv) {
 #ifndef _OPENMP
 	fprintf(stderr, "OpenMP not supported\n");
 	return 1;
 #endif
 
-	omp_set_num_threads(NUMT);
-	fprintf(stderr, "Using %d threads,\n", NUMT);
+	//int numt = omp_get_num_procs();
+	int numt = 1;
+	if (argc > 1) {
+		numt = atoi(argv[1]);
+	}
+	omp_set_num_threads(numt);
+	fprintf(stderr, "Using %d threads,\n", numt);
 
 	double maxMegaMults = 0.;
 	for(int t = 0; t <NUMTRIES; t++) {
