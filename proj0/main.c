@@ -1,6 +1,7 @@
 #include <omp.h>
 #include <stdio.h>
-#include <math.h>
+#include <stdlib.h>
+//#include <math.h>
 
 #define ARRAYSIZE (1<<16)
 #define NUMTRIES 1000
