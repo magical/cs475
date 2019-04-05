@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#define ARRAYSIZE 4096
-#define NUMTRIES 100000
+#define ARRAYSIZE (1<<16)
+#define NUMTRIES 1000
 
 double A[ARRAYSIZE];
 double B[ARRAYSIZE];
@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
 	for(int t = 0; t <NUMTRIES; t++) {
 		double time0 = omp_get_wtime();
 		#pragma omp parallel for default(none) shared(A,B,C)
-		for (int i = 0; i <  ARRAYSIZE; i++) {
-			C[i] = A[i] *B[i];
+		for (int i = 0; i < ARRAYSIZE; i++) {
+			C[i] = A[i] * B[i];
 		}
 		double time1 = omp_get_wtime();
 		double megaMults = (double)ARRAYSIZE / (time1 - time0) / 1e6;
@@ -43,5 +43,4 @@ int main(int argc, char** argv) {
 	printf( "Average Performance = %8.2lf MegaMults/Sec\n", totalMegaMults / NUMTRIES );
 
 	return 0;
-
 }
