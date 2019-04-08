@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <omp.h>
@@ -39,9 +40,14 @@ main( int argc, char *argv[ ] )
 	return 1;
 #endif
 
+	int numt = NUMT;
+	if (argc > 1) {
+		numt = atoi(argv[1]);
+	}
+
 	TimeOfDaySeed( );		// seed the random number generator
 
-	omp_set_num_threads( NUMT );	// set the number of threads to use in the for-loop:`
+	omp_set_num_threads( numt );	// set the number of threads to use in the for-loop:`
 
 	// better to define these here so that the rand() calls don't get into the thread timing:
 	float *xcs = calloc(NUMTRIALS, sizeof xcs[0]);
@@ -81,7 +87,9 @@ main( int argc, char *argv[ ] )
 			float d = b*b - 4.*a*c;
 
 // XXX If d is less than 0., then the circle was completely missed. (Case A) Continue on to the next trial in the for-loop.
-
+			if (d < 0) {
+				continue;
+			}
 
 			// hits the circle:
 			// get the first intersection:
@@ -91,6 +99,9 @@ main( int argc, char *argv[ ] )
 			float tmin = t1 < t2 ? t1 : t2;		// only care about the first intersection
 
 // XXX If tmin is less than 0., then the circle completely engulfs the laser pointer. (Case B) Continue on to the next trial in the for-loop.
+			if (tmin < 0) {
+				continue;
+			}
 
 
 			// where does it intersect the circle?
@@ -120,9 +131,12 @@ main( int argc, char *argv[ ] )
 			float t = ( 0. - ycir ) / outy;
 
 // XXX If t is less than 0., then the reflected beam went up instead of down. Continue on to the next trial in the for-loop.
+			if (t < 0) {
+				continue;
+			}
 
 // XXX Otherwise, this beam hit the infinite plate. (Case D) Increment the number of hits and continue on to the next trial in the for-loop.
-
+			numHits++;
 
 		}
 		double time1 = omp_get_wtime( );
@@ -134,6 +148,7 @@ main( int argc, char *argv[ ] )
 	}
 
 // XXX Print out: (1) the number of threads, (2) the number of trials, (3) the probability of hitting the plate, and (4) the MegaTrialsPerSecond. Printing this as a single line with tabs between the numbers is nice so that you can import these lines right into Excel.
+	printf("%d\t%d\t%f\t%f\n", numt, NUMTRIALS, currentProb, maxPerformance);
 
 	return 0;
 }
