@@ -10,8 +10,8 @@
 #endif
 
 // setting the number of trials in the monte carlo simulation:
-#ifndef NUMTRIALS
-#define NUMTRIALS	1000000
+#ifndef MAXTRIALS
+#define MAXTRIALS	1000000
 #endif
 
 // how many tries to discover the maximum performance:
@@ -40,22 +40,30 @@ main( int argc, char *argv[ ] )
 	return 1;
 #endif
 
-	int numt = NUMT;
+	int numthreads = NUMT;
 	if (argc > 1) {
-		numt = atoi(argv[1]);
+		numthreads = atoi(argv[1]);
+	}
+
+	int numtrials = MAXTRIALS;
+	if (argc > 2) {
+		numtrials = atoi(argv[2]);
+		if (numtrials <= 0 || numtrials > MAXTRIALS) {
+			numtrials = MAXTRIALS;
+		}
 	}
 
 	TimeOfDaySeed( );		// seed the random number generator
 
-	omp_set_num_threads( numt );	// set the number of threads to use in the for-loop:`
+	omp_set_num_threads( numthreads );	// set the number of threads to use in the for-loop:`
 
 	// better to define these here so that the rand() calls don't get into the thread timing:
-	float *xcs = calloc(NUMTRIALS, sizeof xcs[0]);
-	float *ycs = calloc(NUMTRIALS, sizeof ycs[0]);
-	float * rs = calloc(NUMTRIALS, sizeof rs[0]);
+	float *xcs = calloc(numtrials, sizeof xcs[0]);
+	float *ycs = calloc(numtrials, sizeof ycs[0]);
+	float * rs = calloc(numtrials, sizeof rs[0]);
 
 	// fill the random-value arrays:
-	for( int n = 0; n < NUMTRIALS; n++ )
+	for( int n = 0; n < numtrials; n++ )
 	{
 		xcs[n] = Ranf( XCMIN, XCMAX );
 		ycs[n] = Ranf( YCMIN, YCMAX );
@@ -72,8 +80,8 @@ main( int argc, char *argv[ ] )
 		double time0 = omp_get_wtime( );
 
 		int numHits = 0;
-		#pragma omp parallel for default(none) shared(xcs,ycs,rs) reduction(+:numHits)
-		for( int n = 0; n < NUMTRIALS; n++ )
+		#pragma omp parallel for default(none) shared(xcs,ycs,rs,numtrials) reduction(+:numHits)
+		for( int n = 0; n < numtrials; n++ )
 		{
 			// randomize the location and radius of the circle:
 			float xc = xcs[n];
@@ -140,15 +148,15 @@ main( int argc, char *argv[ ] )
 
 		}
 		double time1 = omp_get_wtime( );
-		double megaTrialsPerSecond = (double)NUMTRIALS / ( time1 - time0 ) / 1000000.;
+		double megaTrialsPerSecond = (double)numtrials / ( time1 - time0 ) / 1000000.;
 		if( megaTrialsPerSecond > maxPerformance ) {
 			maxPerformance = megaTrialsPerSecond;
 		}
-		currentProb = (float)numHits/(float)NUMTRIALS;
+		currentProb = (float)numHits/(float)numtrials;
 	}
 
 // XXX Print out: (1) the number of threads, (2) the number of trials, (3) the probability of hitting the plate, and (4) the MegaTrialsPerSecond. Printing this as a single line with tabs between the numbers is nice so that you can import these lines right into Excel.
-	printf("%d\t%d\t%f\t%f\n", numt, NUMTRIALS, currentProb, maxPerformance);
+	printf("%d\t%d\t%f\t%f\n", numthreads, numtrials, currentProb, maxPerformance);
 
 	return 0;
 }
