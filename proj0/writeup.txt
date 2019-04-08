@@ -1,0 +1,27 @@
+Tell what machine you ran this on
+
+flip1.engr.oregonstate.edu
+
+What performance results did you get?
+
+    flip1% ./main 1
+    Using 1 threads,
+    Peak Performance =   311.07 MegaMults/Sec
+    Average Performance =   308.47 MegaMults/Sec
+    flip1% ./main 4
+    Using 4 threads,
+    Peak Performance =  1215.00 MegaMults/Sec
+    Average Performance =  1191.28 MegaMults/Sec
+
+
+What was your 4-thread-to-one-thread speedup?
+
+3.91
+
+If the 4-thread-to-one-thread speedup is less than 4.0, why do you think it is this way?
+
+Overhead?
+
+What was your Parallel Fraction, Fp?
+
+0.99
