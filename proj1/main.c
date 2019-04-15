@@ -21,7 +21,7 @@
 
 // ranges for the random numbers:
 const float XCMIN =	-1.0;
-const float XCMAX =	 1.0;
+const float XCMAX =	+1.0;
 const float YCMIN =	 0.0;
 const float YCMAX =	 2.0;
 const float RMIN  =	 0.5;
