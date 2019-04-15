@@ -68,19 +68,18 @@ int main( int argc, char *argv[ ] )
 
 		// TODO
 		#pragma omp parallel for default(none) shared(fullTileArea,numnodes) reduction(+:volume)
-		for( int i = 0; i < numnodes; i++) {
-			for( int j = 0; j < numnodes; j++ )
-			{
-				double h = Height(i, j, numnodes);
-				double area = fullTileArea;
-				if (i == 0 || i == numnodes - 1) {
-					area *= 0.5;
-				}
-				if (j == 0 || j == numnodes - 1) {
-					area *= 0.5;
-				}
-				volume += h * area;
+		for (int i = 0; i < numnodes*numnodes; i++) {
+			int u = i % numnodes;
+			int v = i / numnodes;
+			double h = Height(u, v, numnodes);
+			double area = fullTileArea;
+			if (u == 0 || u == numnodes - 1) {
+				area *= 0.5;
 			}
+			if (v == 0 || v == numnodes - 1) {
+				area *= 0.5;
+			}
+			volume += h * area;
 		}
 
 		// -------------------------------

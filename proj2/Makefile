@@ -1,7 +1,7 @@
 N=2
 CC=/usr/local/common/gcc-8.2.0/bin/gcc
 main: main.c
-	$(CC) -o main main.c -lm -fopenmp -Wall -Wextra
+	$(CC) -o main main.c -lm -fopenmp -Wall -Wextra -O2
 
 test: main
 	./main 4 10
