@@ -1,3 +1,6 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <omp.h>
 
 // number of threads to spin up
 #define NUMTHREADS	1
@@ -10,16 +13,14 @@
 #define NUMTRIES	10
 #endif
 
+#define XMIN	 0.
+#define XMAX	 3.
+#define YMIN	 0.
+#define YMAX	 3.
 
-float Height( int iu, int iv )	// iu,iv = 0 .. NUMNODES-1
 
+float Height( int iu, int iv, int numnodes );
 
-
-int main( int argc, char *argv[ ] )
-{
-
-	return 0;
-}
 
 int main( int argc, char *argv[ ] )
 {
@@ -28,7 +29,7 @@ int main( int argc, char *argv[ ] )
 	return 1;
 #endif
 
-	int numthreads = NUMT;
+	int numthreads = NUMTHREADS;
 	if (argc > 1) {
 		numthreads = atoi(argv[1]);
 	}
@@ -41,6 +42,8 @@ int main( int argc, char *argv[ ] )
 		}
 	}
 
+	int numnodes = numtrials; // TODO: rename numtrials
+
 	omp_set_num_threads( numthreads ); // set the number of threads to use in the for-loop:`
 
 	// get ready to record the maximum performance and the probability:
@@ -51,36 +54,46 @@ int main( int argc, char *argv[ ] )
 	for( int t = 0; t < NUMTRIES; t++ )
 	{
 		double time0 = omp_get_wtime( );
+		volume = 0;
 
-		int numHits = 0;
-
-		// TODO
+		// -------------------------------
 
 		// the area of a single full-sized tile:
 
-		float fullTileArea = (  ( ( XMAX - XMIN )/(float)(NUMNODES-1) )  *
-					( ( YMAX - YMIN )/(float)(NUMNODES-1) )  );
+		double fullTileArea = ((XMAX - XMIN) / (float)(numnodes-1)) *
+		                      ((YMAX - YMIN) / (float)(numnodes-1));
 
 		// sum up the weighted heights into the variable "volume"
 		// using an OpenMP for loop and a reduction:
 
 		// TODO
-		#pragma omp parallel for default(none) shared(xcs,ycs,rs,numtrials) reduction(+:numHits)
-		for( int n = 0; n < numtrials; n++ )
-		{
-
+		#pragma omp parallel for default(none) shared(fullTileArea,numnodes) reduction(+:volume)
+		for( int i = 0; i < numnodes; i++) {
+			for( int j = 0; j < numnodes; j++ )
+			{
+				double h = Height(i, j, numnodes);
+				double area = fullTileArea;
+				if (i == 0 || i == numnodes - 1) {
+					area *= 0.5;
+				}
+				if (j == 0 || j == numnodes - 1) {
+					area *= 0.5;
+				}
+				volume += h * area;
+			}
 		}
 
+		// -------------------------------
+
 		double time1 = omp_get_wtime( );
-		double megaTrialsPerSecond = (double)numtrials / ( time1 - time0 ) / 1000000.;
+		double megaTrialsPerSecond = (double)numnodes*(double)numnodes / ( time1 - time0 ) / 1000000.;
 		if( megaTrialsPerSecond > maxPerformance ) {
 			maxPerformance = megaTrialsPerSecond;
 		}
-		currentProb = (float)numHits/(float)numtrials;
 	}
 
 // XXX Print out: (1) the number of threads, (2) the number of trials, (3) the probability of hitting the plate, and (4) the MegaTrialsPerSecond. Printing this as a single line with tabs between the numbers is nice so that you can import these lines right into Excel.
-	printf("%d\t%d\t%f\t%f\n", numthreads, numtrials, currentProb, maxPerformance);
+	printf("%d\t%d\t%f\t%f\n", numthreads, numnodes, volume, maxPerformance);
 
 	return 0;
 }
@@ -105,11 +118,6 @@ Height( int iu, int iv, int numnodes )
 	float bv1 = 3. * v * (1.-v) * (1.-v);
 	float bv2 = 3. * v * v * (1.-v);
 	float bv3 = v * v * v;
-
-#define XMIN	 0.
-#define XMAX	 3.
-#define YMIN	 0.
-#define YMAX	 3.
 
 #define TOPZ00	0.
 #define TOPZ10	1.
