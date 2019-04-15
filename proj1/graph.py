@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import sys
 import matplotlib
 matplotlib.use('cairo')
