@@ -19,5 +19,6 @@ threads.png: graph.py proj1.data
 
 
 
-zip: main.c Makefile
-	zip proj1.zip main.c graph.py Makefile
+allfiles=main.c graph.py proj1.data Makefile
+zip: $(allfiles)
+	zip proj1.zip $(allfiles)
