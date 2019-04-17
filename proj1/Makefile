@@ -5,18 +5,19 @@ main: main.c
 test1: main
 	./main 4
 
+trials= 100 200 400 800 1600 3200 6400 20000 40000 100000
 test: main
-	for n in `seq 100 100 10000` `seq 10000 1000 100000`; do \
+	for n in $(trials); do \
 		for t in 1 2 4 8; do \
 			./main $$t $$n ; \
 		done ; \
 	done | tee proj1.data
 
 graph: threads.png
-threads.png: proj1.data
+threads.png: graph.py proj1.data
 	python2 graph.py proj1.data
 
 
 
 zip: main.c Makefile
-	zip proj1.zip main.c Makefile
+	zip proj1.zip main.c graph.py Makefile
