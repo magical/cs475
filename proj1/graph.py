@@ -42,8 +42,12 @@ markers = list("osD^vp*|_+")
 
 
 
-def do_plot(x, ys, xlabel='threads', ylabels=[], outfilename='figure.png'):
+def do_plot(x, ys, xlabel='threads', ylabels=[], outfilename='figure.png', logscale=False):
     fig, ax = plt.subplots()
+    if logscale:
+        ax.set_xscale('log')
+        ax.set_xticks(x)
+        ax.set_xticklabels(x)
     lines = []
     for y, c, m in zip(ys, colors, markers):
         l, = ax.plot(x, y, c = c, marker=m)
@@ -56,7 +60,6 @@ def do_plot(x, ys, xlabel='threads', ylabels=[], outfilename='figure.png'):
                     #columnspacing=1.0, labelspacing=0.0,
                     #handletextpad=0.0, handlelength=1.5,
                     fancybox=True, shadow=True)
-
     fig.savefig(outfilename)
 
 def plural(n, singular, plural):
@@ -70,3 +73,4 @@ print(numthreads)
 print(data)
 do_plot(numthreads, numpy.transpose(data), xlabel='threads', ylabels=addunits(numtrials, "trial", "trials"), outfilename="threads.png")
 do_plot(numtrials, data, xlabel='trials', ylabels=addunits(numthreads, "thread", "threads"), outfilename="trials.png")
+do_plot(numtrials, data, xlabel='trials', ylabels=addunits(numthreads, "thread", "threads"), outfilename="trials-log.png", logscale=True)
