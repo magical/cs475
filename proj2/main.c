@@ -48,7 +48,7 @@ int main( int argc, char *argv[ ] )
 
 	// get ready to record the maximum performance and the probability:
 	float maxPerformance = 0;
-	float volume = 0;
+	double volume = 0;
 
 	// looking for the maximum performance:
 	for( int t = 0; t < NUMTRIES; t++ )
