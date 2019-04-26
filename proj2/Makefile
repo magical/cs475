@@ -7,14 +7,14 @@ test: main
 	./main 4 10
 
 testall: main
-	for n in `seq 100 100 10000` `seq 10000 1000 100000`; do \
+	for n in 25 50 100 200 400 800 1600 3200; do \
 		for t in 1 2 4 8; do \
 			./main $$t $$n ; \
 		done ; \
 	done | tee proj$N.data
 
 graph: threads.png
-threads.png: proj$N.data
+threads.png: graph.py proj$N.data
 	python2 graph.py proj$N.data
 
 zip: main.c Makefile
