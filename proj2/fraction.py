@@ -22,7 +22,7 @@ for l in lines:
 print(p1, p2, p4, p8)
 for n, pn in zip([2,4,8], [p2, p4, p8]):
     S = pn/p1
-    Fp = (1-1/S)/(1-1/float(n))
+    Fp = (1 - 1/S)/(1 - 1/float(n))
     Smax = 1/(1-Fp)
     print(n, "threads")
     print("speedup = %.2f" % S)
