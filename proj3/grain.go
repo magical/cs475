@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
+	"sync"
 )
 
 var (
@@ -35,10 +37,12 @@ const (
 )
 
 func main() {
+	updateTemperatureAndPrecipitation()
+	printResults()
 	go GrainDeer()
 	go GrainGrowth()
-	go Watcher() // increments year and month
 	go MyAgent()
+	Watcher() // increments year and month
 }
 
 func thing() {
@@ -64,32 +68,47 @@ func watchertemplate() {
 	// barrier
 }
 
-func watcher() {
+func Watcher() {
 	for nowYear < 2025 {
 		// compute a temporary next-value for this quantity
 		// based on the current state of the simulation:
 		//. . .
 
 		// DoneComputing barrier:
-		//#pragma omp barrier
-		//. . .
+		barrier()
 
 		// DoneAssigning barrier:
-		//#pragma omp barrier
-		//. . .
+		barrier()
+
+		//print results and increment time
+		printResults()
+		updateYear()
+		updateTemperatureAndPrecipitation()
 
 		// DonePrinting barrier:
-		//#pragma omp barrier
-		//. . .
+		barrier()
 	}
 
 }
 
-func TemperatureAndPrecipitation() {
-	ang := (30*nowMonth + 15) * (math.Pi / 180)
+func printResults() {
+	fmt.Println(nowYear, nowMonth, nowTemp, nowPrecip, nowNumDeer, nowHeight)
+}
+
+func updateYear() {
+	nowMonth++
+	if nowMonth == 12 {
+		nowYear++
+		nowMonth = 0
+	}
+}
+
+var rng = rand.New(rand.NewSource(0))
+
+func updateTemperatureAndPrecipitation() {
+	ang := float64(30*nowMonth+15) * (math.Pi / 180)
 
 	temp := avgTemp - ampTemp*math.Sin(ang)
-	rng := rand.New(rand.NewSource(0))
 
 	nowTemp = temp + ranf(rng, -randomTemp, randomTemp)
 
@@ -103,13 +122,22 @@ func TemperatureAndPrecipitation() {
 func GrainDeer() {
 	//  The Carrying Capacity of the graindeer is the number of inches of height of the grain. If the number of graindeer exceeds this value at the end of a month, decrease the number of graindeer by one. If the number of graindeer is less than this value at the end of a month, increase the number of graindeer by one.
 	//
-	carryingCapacity := nowHeight
-	nextNumDeer = nowNumDeer
+	for {
+		carryingCapacity := nowHeight
+		nextNumDeer := nowNumDeer
 
-	if float64(nowNumDeer) > carryingCapacity {
-		nextNumDeer += 1
-	} else {
-		nextNumDeer -= 1
+		if float64(nowNumDeer) > carryingCapacity {
+			nextNumDeer -= 1
+		} else if float64(nowNumDeer) < carryingCapacity {
+			nextNumDeer += 1
+		}
+
+		barrier()
+
+		nowNumDeer = nextNumDeer
+
+		barrier()
+		barrier()
 	}
 }
 
@@ -118,19 +146,65 @@ func GrainGrowth() {
 	//
 	//  You know how good conditions are by seeing how close you are to an ideal temperature (°F) and precipitation (inches). Do this by computing a Temperature Factor and a Precipitation Factor like this:
 
-	tempFactor := math.Exp(-square((nowTemp - midTemp) / 10))
-	precipFactor := math.Exp(-square((nowPrecip - midPrecip) / 10))
+	for {
+		// this function peaks at 1 around midTemp, and peters off to 0 at plus or minus 10
+		tempFactor := math.Exp(-square((nowTemp - midTemp) / 10))
+		precipFactor := math.Exp(-square((nowPrecip - midPrecip) / 10))
 
-	nowHeight += tempFactor * precipFactor * grainGrowsPerMonth
-	nowHeight -= nowNumDeer * oneDeerEatsPerMonth
-	if nowHeight < 0 {
-		nowHeight = 0
+		nextHeight := nowHeight
+		nextHeight += tempFactor * precipFactor * grainGrowsPerMonth
+		nextHeight -= float64(nowNumDeer) * oneDeerEatsPerMonth
+		if nextHeight < 0 {
+			nextHeight = 0
+		}
+
+		barrier()
+		nowHeight = nextHeight
+		barrier()
+		barrier()
 	}
-
 }
+
+func MyAgent() {}
 
 func square(x float64) float64 { return x * x }
 
 func ranf(rng *rand.Rand, low, high float64) float64 {
 	return rng.Float64()*(high-low) - low
+}
+
+var (
+	mu    sync.Mutex
+	wg1   = make(chan struct{}, 1)
+	wg2   = make(chan struct{}, 1)
+	nwait int
+)
+
+func init() {
+	wg2 <- struct{}{}
+}
+
+const numthreads = 3
+
+func barrier() {
+	mu.Lock()
+	nwait++
+	if nwait == numthreads {
+		<-wg2
+		wg1 <- struct{}{}
+	}
+	mu.Unlock()
+
+	<-wg1
+	wg1 <- struct{}{}
+
+	mu.Lock()
+	nwait--
+	if nwait == 0 {
+		<-wg1
+		wg2 <- struct{}{}
+	}
+	mu.Unlock()
+	<-wg2
+	wg2 <- struct{}{}
 }
