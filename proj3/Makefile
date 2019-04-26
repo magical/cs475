@@ -1,7 +1,7 @@
 N=3
 CXX=/usr/local/common/gcc-8.2.0/bin/g++
-grain: grain.cpp
-	$(CXX) -o $@ $< -lm -fopenmp -Wall -Wextra -O2 -fsanitize=thread
+grain: grain.cpp Makefile
+	$(CXX) -o $@ $< -lm -fopenmp -Wall -Wextra -fsanitize=thread -ggdb
 
 test: grain
 	./grain
