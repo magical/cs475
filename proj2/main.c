@@ -45,7 +45,7 @@ int main( int argc, char *argv[ ] )
 	omp_set_num_threads( numthreads ); // set the number of threads to use in the for-loop:`
 
 	// get ready to record the maximum performance and the probability:
-	float maxPerformance = 0;
+	double maxPerformance = 0;
 	double volume = 0;
 
 	// looking for the maximum performance:
@@ -58,8 +58,8 @@ int main( int argc, char *argv[ ] )
 
 		// the area of a single full-sized tile:
 
-		double fullTileArea = ((XMAX - XMIN) / (float)(numnodes-1)) *
-		                      ((YMAX - YMIN) / (float)(numnodes-1));
+		double fullTileArea = ((XMAX - XMIN) / (double)(numnodes-1)) *
+		                      ((YMAX - YMIN) / (double)(numnodes-1));
 
 		// sum up the weighted heights into the variable "volume"
 		// using an OpenMP for loop and a reduction:
@@ -82,7 +82,7 @@ int main( int argc, char *argv[ ] )
 		// -------------------------------
 
 		double time1 = omp_get_wtime( );
-		double megaTrialsPerSecond = (double)numnodes*(double)numnodes / ( time1 - time0 ) / 1000000.;
+		double megaTrialsPerSecond = (double)numnodes*(double)numnodes / ( time1 - time0 ) / 1e6;
 		if( megaTrialsPerSecond > maxPerformance ) {
 			maxPerformance = megaTrialsPerSecond;
 		}
