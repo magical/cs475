@@ -22,16 +22,16 @@ with open(filename) as f:
 rawdata = data
 
 numthreads = sorted(set(x[0] for x in data))
-numtrials = sorted(set(x[1] for x in data))
+numnodes = sorted(set(x[1] for x in data))
 
-data = numpy.zeros((len(numthreads), len(numtrials)))
+data = numpy.zeros((len(numthreads), len(numnodes)))
 for t, n, _, perf in rawdata:
     ti = numthreads.index(t)
-    ni = numtrials.index(n)
+    ni = numnodes.index(n)
     data[ti][ni] = perf
 
-# FIXME truncate trials other than the first 10
-numtrials = numtrials[:10]
+# FIXME truncate nodes other than the first 10
+numnodes = numnodes[:10]
 data = data[:,:10]
 
 
@@ -53,7 +53,7 @@ def do_plot(x, ys, xlabel='threads', ylabels=[], outfilename='figure.png', logsc
         l, = ax.plot(x, y, c = c, marker=m)
         #_ = ax.scatter(x, y, c = c, marker=m)
         lines.append(l)
-    ax.set(xlabel = xlabel, ylabel = 'perfomance (M trials/s)')
+    ax.set(xlabel = xlabel, ylabel = 'perfomance (M nodes/s)')
     if ylabels:
         fig.legend(lines, ylabels, ncol=4, loc='upper center',
                     #bbox_to_anchor=[0.5, 1.1],
@@ -71,6 +71,6 @@ def addunits(xs, unit, plural_unit):
 #matplotlib.style.use('default')
 print(numthreads)
 print(data)
-do_plot(numthreads, numpy.transpose(data), xlabel='threads', ylabels=addunits(numtrials, "trial", "trials"), outfilename="threads.png")
-do_plot(numtrials, data, xlabel='trials', ylabels=addunits(numthreads, "thread", "threads"), outfilename="trials.png")
-do_plot(numtrials, data, xlabel='trials', ylabels=addunits(numthreads, "thread", "threads"), outfilename="trials-log.png", logscale=True)
+do_plot(numthreads, numpy.transpose(data), xlabel='threads', ylabels=addunits(numnodes, "node", "nodes"), outfilename="threads.png")
+do_plot(numnodes, data, xlabel='number of nodes', ylabels=addunits(numthreads, "thread", "threads"), outfilename="nodes.png")
+do_plot(numnodes, data, xlabel='nodes', ylabels=addunits(numthreads, "thread", "threads"), outfilename="nodes-log.png", logscale=True)
