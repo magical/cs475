@@ -5,8 +5,8 @@
 // number of threads to spin up
 #define NUMTHREADS	1
 
-// maximum number of trials in the monte carlo simulation:
-#define MAXTRIALS	1000000
+// maximum number of nodes in one dimension of the integration
+#define MAXNODES	1000000
 
 // how many tries to discover the maximum performance:
 #ifndef NUMTRIES
@@ -34,15 +34,13 @@ int main( int argc, char *argv[ ] )
 		numthreads = atoi(argv[1]);
 	}
 
-	int numtrials = MAXTRIALS;
+	int numnodes = MAXNODES;
 	if (argc > 2) {
-		numtrials = atoi(argv[2]);
-		if (numtrials <= 0 || numtrials > MAXTRIALS) {
-			numtrials = MAXTRIALS;
+		numnodes = atoi(argv[2]);
+		if (numnodes <= 0 || numnodes > MAXNODES) {
+			numnodes = MAXNODES;
 		}
 	}
-
-	int numnodes = numtrials; // TODO: rename numtrials
 
 	omp_set_num_threads( numthreads ); // set the number of threads to use in the for-loop:`
 
