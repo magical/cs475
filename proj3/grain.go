@@ -21,7 +21,7 @@ var (
 
 // can change if we want
 const (
-	grainGrowsPerMonth  = 8.0 // inche
+	grainGrowsPerMonth  = 8.0 // inches
 	oneDeerEatsPerMonth = 0.5
 
 	avgPrecipPerMonth = 6.0
@@ -38,7 +38,7 @@ const (
 
 func main() {
 	updateTemperatureAndPrecipitation()
-	printResults()
+	//printResults()
 	go GrainDeer()
 	go GrainGrowth()
 	go MyAgent()
@@ -108,8 +108,7 @@ var rng = rand.New(rand.NewSource(0))
 func updateTemperatureAndPrecipitation() {
 	ang := float64(30*nowMonth+15) * (math.Pi / 180)
 
-	temp := avgTemp - ampTemp*math.Sin(ang)
-
+	temp := avgTemp - ampTemp*math.Cos(ang)
 	nowTemp = temp + ranf(rng, -randomTemp, randomTemp)
 
 	precip := avgPrecipPerMonth + ampPrecipPerMonth*math.Sin(ang)
