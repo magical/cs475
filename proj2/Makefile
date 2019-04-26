@@ -7,7 +7,7 @@ test: main
 	./main 4 10
 
 testall: main
-	for n in 25 50 100 200 400 800 1600 3200; do \
+	for n in 8 16 32 64 128 256 512 1024; do \
 		for t in 1 2 4 8; do \
 			./main $$t $$n ; \
 		done ; \
