@@ -66,7 +66,6 @@ int main( int argc, char *argv[ ] )
 		// sum up the weighted heights into the variable "volume"
 		// using an OpenMP for loop and a reduction:
 
-		// TODO
 		#pragma omp parallel for default(none) shared(fullTileArea,numnodes) reduction(+:volume)
 		for (int i = 0; i < numnodes*numnodes; i++) {
 			int u = i % numnodes;
