@@ -173,37 +173,36 @@ func ranf(rng *rand.Rand, low, high float64) float64 {
 }
 
 var (
-	mu         sync.Mutex
-	turnstile1 = make(chan struct{}, 1)
-	turnstile2 = make(chan struct{}, 1)
-	nwait      int
+	mu    sync.Mutex
+	wg1   sync.WaitGroup
+	wg2   sync.WaitGroup
+	nwait int
 )
 
 func init() {
-	turnstile2 <- struct{}{}
+	wg1.Add(numthreads)
 }
 
 const numthreads = 3
 
 func barrier() {
+	// two-phase barrier
+
 	mu.Lock()
 	nwait++
 	if nwait == numthreads {
-		<-turnstile2
-		turnstile1 <- struct{}{}
+		wg2.Add(numthreads)
 	}
 	mu.Unlock()
-
-	<-turnstile1
-	turnstile1 <- struct{}{}
+	wg1.Done()
+	wg1.Wait()
 
 	mu.Lock()
 	nwait--
 	if nwait == 0 {
-		<-turnstile1
-		turnstile2 <- struct{}{}
+		wg1.Add(numthreads)
 	}
 	mu.Unlock()
-	<-turnstile2
-	turnstile2 <- struct{}{}
+	wg2.Done()
+	wg2.Wait()
 }
