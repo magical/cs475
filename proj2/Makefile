@@ -17,5 +17,6 @@ graph: threads.png
 threads.png: graph.py proj$N.data
 	python2 graph.py proj$N.data
 
-zip: main.c Makefile
-	zip proj$N.zip main.c graph.py Makefile
+files=main.c graph.py table.py fraction.py proj$N.data Makefile
+zip: $(files)
+	zip proj$N.zip $(files)
