@@ -49,13 +49,13 @@ int main() {
 	#pragma omp parallel sections
 	{
 		#pragma omp section
+		Watcher();
+		#pragma omp section
 		GrainDeer();
 		#pragma omp section
 		GrainGrowth();
 		#pragma omp section
 		MyAgent();
-		#pragma omp section
-		Watcher();
 	}
 	return 0;
 }
@@ -164,8 +164,7 @@ void MyAgent() {
 }
 
 
-double
-Ranf( unsigned int *seedp,  double low, double high )
+double Ranf( unsigned int *seedp,  double low, double high )
 {
 	double r = (double) rand_r(seedp);  // 0 - RAND_MAX
 	return low  +  r * ( high - low ) / (double)RAND_MAX;
