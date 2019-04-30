@@ -6,12 +6,13 @@ grain: grain.cpp Makefile
 test: grain
 	./grain
 
-data: main
+data: grain
 	./grain | tee proj$N.data
 
 graph: threads.png
-threads.png: graph.py proj$N.data
+threads.png: graph.py proj$N.data Makefile
 	python2 graph.py proj$N.data
 
-zip: main.c Makefile
-	zip proj$N.zip main.c graph.py Makefile
+files=grain.cpp graph.py Makefile
+zip: $(files)
+	zip proj$N.zip $(files)
