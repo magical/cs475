@@ -23,18 +23,23 @@ data = numpy.array(data)
 
 def do_plot(x, ys, xlabel='month', ylabels=[], outfilename='figure.png', logscale=False):
     fig, ax = plt.subplots()
+
+    x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
+    ax.xaxis.set_major_formatter(x_formatter)
+
     if logscale:
         ax.set_xscale('log')
         ax.set_xticks(x)
         ax.set_xticklabels(x)
     lines = []
     for y, c, m in zip(ys, colors, markers):
-        l, = ax.plot(x, y, c = c, marker=m)
+        l, = ax.plot(x, y, c = c, marker=m, linewidth=2.5)
         lines.append(l)
     ax.set(xlabel = xlabel, ylabel = '')
     if ylabels:
         ax.legend(lines, ylabels,
                     loc='best',
+                    fontsize = 'small',
                     #ncol=4, loc='upper center',
                     #bbox_to_anchor=[0.5, 1.1],
                     fancybox=True, shadow=True)
@@ -55,4 +60,4 @@ labels = [
 
 x = data[: , 0]  + (data[: , 1] / 12.0)
 ys = numpy.transpose(data[: , 2:])
-do_plot(x, ys, xlabel='time', ylabels=labels, outfilename="figure.png")
+do_plot(x, ys, xlabel='year', ylabels=labels, outfilename="figure.png")
