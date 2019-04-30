@@ -47,7 +47,7 @@ def addunits(xs, unit, plural_unit):
     return ["%s %s" % (x, plural(x, unit, plural_unit)) for x in xs]
 
 labels = [
-    u"temperature (°F)",
+    u"temperature (°C)",
     u"precipitation (in)",
     u"number of graindeer",
     u"grain height (in)",

@@ -84,7 +84,8 @@ void Watcher() {
 }
 
 void printResults() {
-	printf("%ld %ld %f %f %ld %f\n", nowYear, nowMonth, nowTemp, nowPrecip, nowNumDeer, nowHeight);
+	double temp = (nowTemp - 32.) * (5./9.); // convert to celcius
+	printf("%ld %ld %f %f %ld %f\n", nowYear, nowMonth, temp, nowPrecip, nowNumDeer, nowHeight);
 }
 
 void updateYear() {
