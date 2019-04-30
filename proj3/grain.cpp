@@ -41,14 +41,10 @@ void updateYear();
 double Ranf( unsigned int *seedp,  double low, double high );
 void barrier();
 
-void InitBarrier( int );
-void WaitBarrier( );
-
 static double square(double x ) { return x * x; }
 
 int main() {
 	omp_set_num_threads(4);
-	InitBarrier(4);
 	updateTemperatureAndPrecipitation();
 	#pragma omp parallel sections
 	{
@@ -175,54 +171,6 @@ Ranf( unsigned int *seedp,  double low, double high )
 	return low  +  r * ( high - low ) / (double)RAND_MAX;
 }
 
-
-omp_lock_t	Lock;
-int		NumInThreadTeam;
-int		NumAtBarrier;
-int		NumGone;
-
-
-
-// specify how many threads will be in the barrier:
-//	(also init's the Lock)
-
-void InitBarrier( int n )
-{
-	NumInThreadTeam = n;
-	NumAtBarrier = 0;
-	omp_init_lock( &Lock );
-}
-
-
-// have the calling thread wait here until all the other threads catch up:
-
-void WaitBarrier()
-{
-	omp_set_lock( &Lock );
-	{
-		NumAtBarrier++;
-		if( NumAtBarrier == NumInThreadTeam )
-		{
-			NumGone = 0;
-			NumAtBarrier = 0;
-			// let all other threads get back to what they were doing
-			// before this one unlocks, knowing that they might immediately
-			// call WaitBarrier( ) again:
-			while( NumGone != NumInThreadTeam-1 ) {}
-			omp_unset_lock( &Lock );
-			return;
-		}
-	}
-	omp_unset_lock( &Lock );
-
-	while( NumAtBarrier != 0 ) {}	// this waits for the nth thread to arrive
-
-	#pragma omp atomic
-	NumGone++;			// this flags how many threads have returned
-}
-
-
 void barrier() {
 	#pragma omp barrier
-	//WaitBarrier();
 }
