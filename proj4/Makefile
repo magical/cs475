@@ -2,7 +2,7 @@ N=3
 CXX=/usr/local/common/gcc-8.2.0/bin/g++
 
 simd: main.c simd.p4.cpp simd.p4.h Makefile
-	$(CXX) -o $@ main.c simd.p4.cpp -lm -fopenmp -Wall -Wextra -ggdb
+	$(CXX) -o $@ main.c simd.p4.cpp -O2 -lm -fopenmp -Wall -Wextra -ggdb
 
 test: simd
 	./simd
