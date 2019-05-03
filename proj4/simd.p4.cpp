@@ -44,41 +44,31 @@ SimdMulSum( float *a, float *b, int len )
 	float sum[4] = { 0., 0., 0., 0. };
 	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
 
-	__asm
-	(
-		".att_syntax\n\t"
-		"movq    -40(%rbp), %r8\n\t"		// a
-		"movq    -48(%rbp), %rcx\n\t"		// b
-		"leaq    -32(%rbp), %rdx\n\t"		// &sum[0]
-		"movups	 (%rdx), %xmm2\n\t"		// 4 copies of 0. in xmm2
-	);
-
+	float *atmp = a, *btmp = b;
 	for( int i = 0; i < limit; i += SSE_WIDTH )
 	{
 		__asm
 		(
 			".att_syntax\n\t"
-			"movups	(%r8), %xmm0\n\t"	// load the first sse register
-			"movups	(%rcx), %xmm1\n\t"	// load the second sse register
-			"mulps	%xmm1, %xmm0\n\t"	// do the multiply
-			"addps	%xmm0, %xmm2\n\t"	// do the add
-			"addq $16, %r8\n\t"
-			"addq $16, %rcx\n\t"
+			"movups	(%0), %%xmm0\n\t"	// load the first sse register
+			"movups	(%1), %%xmm1\n\t"	// load the second sse register
+			"mulps	%%xmm1, %%xmm0\n\t"	// do the multiply
+			"addps	%%xmm0, %2\n\t"	// do the add
+			"addq $16, %0\n\t"
+			"addq $16, %1\n\t"
+			: /* outputs */ "+r" (atmp), "+r" (btmp), "+x" (sum)
+			: /* inputs */ "m" (*atmp), "m" (*btmp)
+			: /* clobbers */ "xmm0", "xmm1"
 		);
 	}
 
-	__asm
-	(
-		".att_syntax\n\t"
-		"movups	 %xmm2, (%rdx)\n\t"	// copy the sums back to sum[ ]
-	);
-
+	float extra = 0;
 	for( int i = limit; i < len; i++ )
 	{
-		sum[0] += a[i] * b[i];
+		extra += a[i] * b[i];
 	}
 
-	return sum[0] + sum[1] + sum[2] + sum[3];
+	return sum[0] + sum[1] + sum[2] + sum[3] + extra;
 }
 
 

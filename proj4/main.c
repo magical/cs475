@@ -71,13 +71,13 @@ int main( int argc, char *argv[ ] )
 		double time0 = omp_get_wtime( );
 
 		// XXX do simd here
-		/*
+
 		float out_simd = SimdMulSum(xcs, ycs, arraysize);
 		if (fabs(out_simd - out_cpu) > 0.0001) {
 			fprintf(stderr, "warning: simd %f != cpu %f\n", out_simd, out_cpu);
 		}
-		*/
-		SimdMul(xcs, ycs, rs, arraysize);
+
+		//SimdMul(xcs, ycs, rs, arraysize);
 
 
 		double time1 = omp_get_wtime( );
