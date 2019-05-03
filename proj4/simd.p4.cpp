@@ -10,26 +10,23 @@ void
 SimdMul( float *a, float *b,   float *c,   int len )
 {
 	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
-	__asm
-	(
-		".att_syntax\n\t"
-		"movq    -24(%rbp), %r8\n\t"		// a
-		"movq    -32(%rbp), %rcx\n\t"		// b
-		"movq    -40(%rbp), %rdx\n\t"		// c
-	);
+	float *atmp = a, *btmp = b, *ctmp = c;
 
 	for( int i = 0; i < limit; i += SSE_WIDTH )
 	{
 		__asm
 		(
 			".att_syntax\n\t"
-			"movups	(%r8), %xmm0\n\t"	// load the first sse register
-			"movups	(%rcx), %xmm1\n\t"	// load the second sse register
-			"mulps	%xmm1, %xmm0\n\t"	// do the multiply
-			"movups	%xmm0, (%rdx)\n\t"	// store the result
-			"addq $16, %r8\n\t"
-			"addq $16, %rcx\n\t"
-			"addq $16, %rdx\n\t"
+			"movups	(%0), %%xmm0\n\t"	// load the first sse register
+			"movups	(%1), %%xmm1\n\t"	// load the second sse register
+			"mulps	%%xmm1, %%xmm0\n\t"	// do the multiply
+			"movups	%%xmm0, (%2)\n\t"	// store the result
+			"addq $16, %0\n\t"
+			"addq $16, %1\n\t"
+			"addq $16, %2\n\t"
+			: /* outputs */ "+r" (atmp), "+r" (btmp), "+r" (ctmp), "=m" (*ctmp)
+			: /* inputs */ "m" (*atmp), "m" (*btmp)
+			: /* clobbers */ "xmm0", "xmm1"
 		);
 	}
 
