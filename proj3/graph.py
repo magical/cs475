@@ -56,6 +56,7 @@ labels = [
     u"precipitation (in)",
     u"number of graindeer",
     u"grain height (in)",
+    u"grain density factor",
 ]
 
 x = data[: , 0]  + (data[: , 1] / 12.0)

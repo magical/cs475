@@ -9,8 +9,9 @@ long nowMonth = 0;
 
 double nowPrecip ;
 double nowTemp   ;
-double nowHeight = 1;
+double nowHeight = 1.0;
 long nowNumDeer = 1;
+double nowMystery = 1.0;
 
 
 // plus fourth something
@@ -19,6 +20,7 @@ long nowNumDeer = 1;
 const long maxYear = 2025;
 const double grainGrowsPerMonth  = 8.0; // inches
 const double oneDeerEatsPerMonth = 0.5;
+const double numMonthsForGrainDensityToDouble = 18.0;
 
 const double avgPrecipPerMonth = 6.0;
 const double ampPrecipPerMonth = 6.0;
@@ -85,7 +87,7 @@ void Watcher() {
 
 void printResults() {
 	double temp = (nowTemp - 32.) * (5./9.); // convert to celcius
-	printf("%ld %ld %f %f %ld %f\n", nowYear, nowMonth, temp, nowPrecip, nowNumDeer, nowHeight);
+	printf("%ld %ld %f %f %ld %f %f\n", nowYear, nowMonth, temp, nowPrecip, nowNumDeer, nowHeight, nowMystery);
 }
 
 void updateYear() {
@@ -120,7 +122,7 @@ void GrainDeer() {
 		if (((double)(nowNumDeer)) > carryingCapacity) {
 			nextNumDeer -= 1;
 		} else if (((double)(nowNumDeer)) < carryingCapacity) {
-			nextNumDeer += 1;
+			nextNumDeer += nowMystery;
 		}
 
 		barrier();
@@ -156,9 +158,32 @@ void GrainGrowth() {
 	}
 }
 
+/* ideas:
+ * - grain strain (a certain percentage of grain is poisonous to graindeer
+ * - farmer cuts grain every so often
+ * - wolfs which eat deer
+ * - drought in a certain year
+ * - bugs which eat the grain too
+ * - another type of grain
+ * - periodic fires
+ */
 void MyAgent() {
+	// Approximately every 18 months, grain density doubles: the grain
+	// farmers are able to grow more grain in the same amount of space.
+	// This has the side effect of promoting graindeer growth because they
+	// can now raise more children because they don't have to spend as much
+	// time searching for food. The number of additional graindeer each
+	// month (assuming the grain is of a sufficient height) is precisely
+	// proportional to the grain density.
+	//
+	double densityGrowthPerMonth = pow(2.0, 1./numMonthsForGrainDensityToDouble);
 	while (nowYear < maxYear) {
+		double nextMystery = nowMystery * densityGrowthPerMonth;
+
 		barrier();
+
+		nowMystery = nextMystery;
+
 		barrier();
 		barrier();
 	}
