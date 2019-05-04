@@ -11,7 +11,7 @@ double nowPrecip ;
 double nowTemp   ;
 double nowHeight = 1.0;
 long nowNumDeer = 1;
-double nowMystery = 1.0;
+double nowDensity = 1.0;
 
 
 // plus fourth something
@@ -36,7 +36,7 @@ const double midPrecip = 10.0;
 void Watcher();
 void GrainDeer();
 void GrainGrowth();
-void MyAgent();
+void GrainDensity();
 void updateTemperatureAndPrecipitation();
 void printResults();
 void updateYear();
@@ -57,7 +57,7 @@ int main() {
 		#pragma omp section
 		GrainGrowth();
 		#pragma omp section
-		MyAgent();
+		GrainDensity();
 	}
 	return 0;
 }
@@ -87,7 +87,7 @@ void Watcher() {
 
 void printResults() {
 	double temp = (nowTemp - 32.) * (5./9.); // convert to celcius
-	printf("%ld %ld %f %f %ld %f %f\n", nowYear, nowMonth, temp, nowPrecip, nowNumDeer, nowHeight, nowMystery);
+	printf("%ld %ld %f %f %ld %f %f\n", nowYear, nowMonth, temp, nowPrecip, nowNumDeer, nowHeight, nowDensity);
 }
 
 void updateYear() {
@@ -122,7 +122,7 @@ void GrainDeer() {
 		if (((double)(nowNumDeer)) > carryingCapacity) {
 			nextNumDeer -= 1;
 		} else if (((double)(nowNumDeer)) < carryingCapacity) {
-			nextNumDeer += nowMystery;
+			nextNumDeer += nowDensity;
 		}
 
 		barrier();
@@ -158,16 +158,7 @@ void GrainGrowth() {
 	}
 }
 
-/* ideas:
- * - grain strain (a certain percentage of grain is poisonous to graindeer
- * - farmer cuts grain every so often
- * - wolfs which eat deer
- * - drought in a certain year
- * - bugs which eat the grain too
- * - another type of grain
- * - periodic fires
- */
-void MyAgent() {
+void GrainDensity() {
 	// Approximately every 18 months, grain density doubles: the grain
 	// farmers are able to grow more grain in the same amount of space.
 	// This has the side effect of promoting graindeer growth because they
@@ -178,11 +169,11 @@ void MyAgent() {
 	//
 	double densityGrowthPerMonth = pow(2.0, 1./numMonthsForGrainDensityToDouble);
 	while (nowYear < maxYear) {
-		double nextMystery = nowMystery * densityGrowthPerMonth;
+		double nextDensity = nowDensity * densityGrowthPerMonth;
 
 		barrier();
 
-		nowMystery = nextMystery;
+		nowDensity = nextDensity;
 
 		barrier();
 		barrier();
