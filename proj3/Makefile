@@ -9,6 +9,10 @@ test: grain
 data: grain
 	./grain | tee proj$N.data
 
+table: table.txt
+table.txt:
+	python2 table.py proj$N.data > table.txt
+
 graph: threads.png
 threads.png: graph.py proj$N.data Makefile
 	python2 graph.py proj$N.data
