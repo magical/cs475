@@ -5,16 +5,13 @@
 
 long nowYear  = 2019;
 long nowMonth = 0;
-	// can change starting values
 
+// can change starting values
 double nowPrecip ;
 double nowTemp   ;
 double nowHeight = 1.0;
 long nowNumDeer = 1;
 double nowDensity = 1.0;
-
-
-// plus fourth something
 
 // can change if we want
 const long maxYear = 2025;
@@ -183,6 +180,7 @@ void GrainDensity() {
 
 double Ranf( unsigned int *seedp,  double low, double high )
 {
+	//return 0.0;
 	double r = (double) rand_r(seedp);  // 0 - RAND_MAX
 	return low  +  r * ( high - low ) / (double)RAND_MAX;
 }
