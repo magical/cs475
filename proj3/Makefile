@@ -17,6 +17,6 @@ graph: threads.png
 threads.png: graph.py proj$N.data Makefile
 	python2 graph.py proj$N.data
 
-files=grain.cpp graph.py Makefile
+files=grain.cpp graph.py table.py proj3.data Makefile
 zip: $(files)
 	zip proj$N.zip $(files)
