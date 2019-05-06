@@ -57,10 +57,33 @@ int main( int argc, char *argv[ ] )
 	}
 
 	// get ready to record the maximum performance and the probability:
-	double minSimdTime = INFINITY;
-	double minCpuTime  = INFINITY;
+	double minSimdMulTime = INFINITY;
+	double minCpuMulTime  = INFINITY;
 
-	// looking for the maximum performance:
+	for( int t = 0; t < NUMTRIES; t++ )
+	{
+		double time0 = omp_get_wtime( );
+		NonSimdMul(arr1, arr2, rs, arraysize);
+		double time1 = omp_get_wtime( );
+		double d = time1 - time0;
+		if (d < minCpuMulTime) {
+			minCpuMulTime = d;
+		}
+	}
+
+	for( int t = 0; t < NUMTRIES; t++ )
+	{
+		double time0 = omp_get_wtime( );
+		SimdMul(arr1, arr2, rs, arraysize);
+		double time1 = omp_get_wtime( );
+		double d = time1 - time0;
+		if (d < minSimdMulTime) {
+			minSimdMulTime = d;
+		}
+	}
+
+	double minSimdSumTime = INFINITY;
+	double minCpuSumTime  = INFINITY;
 
 	float got_cpu = 0.;
 	for( int t = 0; t < NUMTRIES; t++ )
@@ -70,8 +93,8 @@ int main( int argc, char *argv[ ] )
 		NonSimdMul(arr1, arr2, rs, arraysize);
 		double time1 = omp_get_wtime( );
 		double d = time1 - time0;
-		if (d < minCpuTime) {
-			minCpuTime = d;
+		if (d < minCpuSumTime) {
+			minCpuSumTime = d;
 		}
 	}
 
@@ -83,8 +106,8 @@ int main( int argc, char *argv[ ] )
 		SimdMul(arr1, arr2, rs, arraysize);
 		double time1 = omp_get_wtime( );
 		double d = time1 - time0;
-		if (d < minSimdTime) {
-			minSimdTime = d;
+		if (d < minSimdSumTime) {
+			minSimdSumTime = d;
 		}
 	}
 
@@ -92,9 +115,10 @@ int main( int argc, char *argv[ ] )
 		fprintf(stderr, "warning: simd %f != cpu %f\n", got_simd, got_cpu);
 	}
 
-	double mulSumSpeedup = minCpuTime / minSimdTime;
+	double mulSpeedup = minCpuMulTime / minSimdMulTime;
+	double sumSpeedup = minCpuSumTime / minSimdSumTime;
 
-	printf("%d\t%ld\t%f\t%f\t%g\t%g\n", numthreads, arraysize, got_simd, mulSumSpeedup, minSimdTime, minCpuTime);
+	printf("%d\t%ld\t%f\t%f\t%f\t%g\t%g\n", numthreads, arraysize, got_simd, mulSpeedup, sumSpeedup,  minCpuSumTime, minSimdSumTime);
 
 	return 0;
 }
