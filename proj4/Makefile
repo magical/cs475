@@ -1,4 +1,4 @@
-N=3
+N=4
 CXX=/usr/local/common/gcc-8.2.0/bin/g++
 
 simd: main.c simd.p4.cpp simd.p4.h Makefile
