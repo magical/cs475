@@ -44,21 +44,26 @@ SimdMulSum( float *a, float *b, int len )
 	float sum[4] = { 0., 0., 0., 0. };
 	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
 
-	float *atmp = a, *btmp = b;
-	for( int i = 0; i < limit; i += SSE_WIDTH )
-	{
+	if (0 < limit) {
+		int count = limit;
+		float *atmp = a, *btmp = b;
 		__asm
 		(
 			".att_syntax\n\t"
+			"movups %2,%%xmm2\n\t"
+		".loop%=:\n\t"
 			"movups	(%0), %%xmm0\n\t"	// load the first sse register
 			"movups	(%1), %%xmm1\n\t"	// load the second sse register
 			"mulps	%%xmm1, %%xmm0\n\t"	// do the multiply
-			"addps	%%xmm0, %2\n\t"	// do the add
+			"addps	%%xmm0, %%xmm2\n\t"	// do the add
 			"addq $16, %0\n\t"
 			"addq $16, %1\n\t"
-			: /* outputs */ "+r" (atmp), "+r" (btmp), "+x" (sum)
-			: /* inputs */ "m" (*atmp), "m" (*btmp)
-			: /* clobbers */ "xmm0", "xmm1"
+			"subl %4,%3\n\t"
+			"jg .loop%=\n\t"
+			"movups %%xmm2,%2\n\t"
+			: /* outputs */ "+r" (atmp), "+r" (btmp), "+m" (sum), "+r" (count)
+			: /* inputs */ "ir" (SSE_WIDTH), "m" (*atmp), "m" (*btmp)
+			: /* clobbers */ "xmm0", "xmm1", "xmm2"
 		);
 	}
 

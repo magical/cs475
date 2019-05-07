@@ -89,8 +89,7 @@ int main( int argc, char *argv[ ] )
 	for( int t = 0; t < NUMTRIES; t++ )
 	{
 		double time0 = omp_get_wtime( );
-		//got_cpu = NonSimdMulSum(arr1, arr2, arraysize);
-		NonSimdMul(arr1, arr2, rs, arraysize);
+		got_cpu = NonSimdMulSum(arr1, arr2, arraysize);
 		double time1 = omp_get_wtime( );
 		double d = time1 - time0;
 		if (d < minCpuSumTime) {
@@ -102,8 +101,7 @@ int main( int argc, char *argv[ ] )
 	for( int t = 0; t < NUMTRIES; t++ )
 	{
 		double time0 = omp_get_wtime( );
-		//got_simd = SimdMulSum(arr1, arr2, arraysize);
-		SimdMul(arr1, arr2, rs, arraysize);
+		got_simd = SimdMulSum(arr1, arr2, arraysize);
 		double time1 = omp_get_wtime( );
 		double d = time1 - time0;
 		if (d < minSimdSumTime) {
@@ -111,7 +109,7 @@ int main( int argc, char *argv[ ] )
 		}
 	}
 
-	if (fabs(got_simd - got_cpu) > 0.00001) {
+	if (fabs(got_simd - got_cpu) > 0.0001) {
 		fprintf(stderr, "warning: simd %f != cpu %f\n", got_simd, got_cpu);
 	}
 

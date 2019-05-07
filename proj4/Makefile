@@ -8,7 +8,9 @@ test: simd
 	./simd
 
 data: simd
-	./simd | tee proj$N.data
+	for n in 8 40 80 160 320 640 960 1200 $$(seq 1600 400 10000); do \
+		./simd 1 $$n; \
+	done | tee proj$N.data
 
 graph: threads.png
 threads.png: graph.py proj$N.data Makefile
