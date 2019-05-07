@@ -12,8 +12,8 @@ data: simd
 		./simd 1 $$n; \
 	done | tee proj$N.data
 
-graph: threads.png
-threads.png: graph.py proj$N.data Makefile
+graph: small.png
+small.png: graph.py proj$N.data Makefile
 	python2 graph.py proj$N.data
 
 files=main.c simd.p4.* Makefile
