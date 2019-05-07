@@ -8,7 +8,7 @@ test: simd
 	./simd
 
 data: simd
-	for n in 8 40 80 160 320 640 960 1200 $$(seq 1600 400 10000); do \
+	for n in $$(seq 8 8 120) $$(seq 120 40 1000) $$(seq 1000 400 10000) $$(seq 10000 1000 100000); do \
 		./simd 1 $$n; \
 	done | tee proj$N.data
 
