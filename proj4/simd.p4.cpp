@@ -64,13 +64,12 @@ SimdMulSum( float *a, float *b, int len )
 		__asm ("movups %1,%0" : "=m" (sum) : "x" (tmp) : /*no clobbers*/);
 	}
 
-	float extra = 0;
 	for( int i = limit; i < len; i++ )
 	{
-		extra += a[i] * b[i];
+		sum[0] += a[i] * b[i];
 	}
 
-	return sum[0] + sum[1] + sum[2] + sum[3] + extra;
+	return sum[0] + sum[1] + sum[2] + sum[3];
 }
 
 
