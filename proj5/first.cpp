@@ -137,7 +137,7 @@ main( int argc, char *argv[ ] )
 	clProgramText[fileSize] = '\0';
 	fclose( fp );
 	if( n != fileSize )
-		fprintf( stderr, "Expected to read %d bytes read from '%s' -- actually read %d.\n", fileSize, CL_FILE_NAME, n );
+		fprintf( stderr, "Expected to read %zd bytes read from '%s' -- actually read %zd.\n", fileSize, CL_FILE_NAME, n );
 
 	// create the text for the kernel program:
 
