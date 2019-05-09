@@ -1,9 +1,9 @@
 // 1. Program header
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>
 #ifdef WIN32
 #include <windows.h>
 #else
@@ -34,7 +34,7 @@ void				Wait( cl_command_queue );
 int				LookAtTheBits( float );
 
 void die(const char* msg) {
-	fprintf( stderr, msg );
+	fprintf( stderr, "%s", msg );
 	exit(1);
 }
 
@@ -194,8 +194,10 @@ main( int argc, char *argv[ ] )
 	time0 = omp_get_wtime( );
 
 	status = clEnqueueNDRangeKernel( cmdQueue, kernel, 1, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL );
-	if( status != CL_SUCCESS )
+	if( status != CL_SUCCESS ) {
 		fprintf( stderr, "clEnqueueNDRangeKernel failed: %d\n", status );
+		exit(1);
+	}
 
 	Wait( cmdQueue );
 	double time1 = omp_get_wtime( );
@@ -204,7 +206,7 @@ main( int argc, char *argv[ ] )
 
 	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, dataSize, hC, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
-			die( "clEnqueueReadBuffer failed\n" );
+		die( "clEnqueueReadBuffer failed\n" );
 
 	// did it work?
 
