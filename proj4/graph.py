@@ -54,10 +54,14 @@ x = data[: , 1]
 ys = numpy.transpose(data[: , 3:5])
 print(ys.shape)
 smallindex = 0
+midindex = 0
 for i, n in enumerate(x):
-    if n <= 5000:
+    if n <= 1000:
         smallindex = i
+    elif n <= 10000:
+        midindex = i
     else:
         break
 do_plot(x[:smallindex], ys[:, :smallindex] , xlabel='array size', ylabels=labels, outfilename="small.png")
+do_plot(x[:midindex], ys[:, :midindex] , xlabel='array size', ylabels=labels, outfilename="mid.png")
 do_plot(x, ys, xlabel='array size', ylabels=labels, outfilename="large.png")
