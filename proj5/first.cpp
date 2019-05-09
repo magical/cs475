@@ -69,8 +69,9 @@ main( int argc, char *argv[ ] )
 
 	// get the device id:
 
+	// TODO: change back to GPU instead of ALL
 	cl_device_id device;
-	status = clGetDeviceIDs( platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL );
+	status = clGetDeviceIDs( platform, CL_DEVICE_TYPE_ALL, 1, &device, NULL );
 	if( status != CL_SUCCESS )
 		die( "clGetDeviceIDs failed (2)\n" );
 
