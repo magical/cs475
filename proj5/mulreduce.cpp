@@ -19,15 +19,15 @@
 #define	NMB			64
 #endif
 
-#define NUM_ELEMENTS		NMB*1024*1024
+#define NUM_ELEMENTS		NMB*1024
 
 #ifndef LOCAL_SIZE
 #define	LOCAL_SIZE		64
 #endif
 
-#define	NUM_WORK_GROUPS		NUM_ELEMENTS/LOCAL_SIZE
+const int numWorkgroups = 	NUM_ELEMENTS/LOCAL_SIZE;
 
-const char *			CL_FILE_NAME = { "first.cl" };
+const char *			CL_FILE_NAME = { "mulreduce.cl" };
 const float			TOL = 0.0001f;
 
 void				Wait( cl_command_queue );
@@ -89,6 +89,7 @@ main( int argc, char *argv[ ] )
 	}
 
 	size_t dataSize = NUM_ELEMENTS * sizeof(float);
+	size_t cSize = numWorkgroups * sizeof(float);
 
 	// 3. create an opencl context:
 
@@ -112,7 +113,7 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		die( "clCreateBuffer failed (2)\n" );
 
-	cl_mem dC = clCreateBuffer( context, CL_MEM_WRITE_ONLY, dataSize, NULL, &status );
+	cl_mem dC = clCreateBuffer( context, CL_MEM_WRITE_ONLY, cSize, NULL, &status );
 	if( status != CL_SUCCESS )
 		die( "clCreateBuffer failed (3)\n" );
 
@@ -137,8 +138,10 @@ main( int argc, char *argv[ ] )
 	size_t n = fread( clProgramText, 1, fileSize, fp );
 	clProgramText[fileSize] = '\0';
 	fclose( fp );
-	if( n != fileSize )
+	if( n != fileSize ) {
 		fprintf( stderr, "Expected to read %zd bytes read from '%s' -- actually read %zd.\n", fileSize, CL_FILE_NAME, n );
+		exit(1);
+	}
 
 	// create the text for the kernel program:
 
@@ -161,11 +164,12 @@ main( int argc, char *argv[ ] )
 		clGetProgramBuildInfo( program, device, CL_PROGRAM_BUILD_LOG, size, log, NULL );
 		fprintf( stderr, "clBuildProgram failed:\n%s\n", log );
 		delete [ ] log;
+		exit(1);
 	}
 
 	// 9. create the kernel object:
 
-	cl_kernel kernel = clCreateKernel( program, "ArrayMult", &status );
+	cl_kernel kernel = clCreateKernel( program, "ArrayMultReduce", &status );
 	if( status != CL_SUCCESS )
 		die( "clCreateKernel failed\n" );
 
@@ -179,9 +183,13 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		die( "clSetKernelArg failed (2)\n" );
 
-	status = clSetKernelArg( kernel, 2, sizeof(cl_mem), &dC );
+	status = clSetKernelArg( kernel, 2, LOCAL_SIZE*sizeof(float), NULL);
 	if( status != CL_SUCCESS )
 		die( "clSetKernelArg failed (3)\n" );
+
+	status = clSetKernelArg( kernel, 3, sizeof(cl_mem), &dC );
+	if( status != CL_SUCCESS )
+		die( "clSetKernelArg failed (4)\n" );
 
 
 	// 11. enqueue the kernel object for execution:
@@ -205,26 +213,32 @@ main( int argc, char *argv[ ] )
 
 	// 12. read the results buffer back from the device to the host:
 
-	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, dataSize, hC, 0, NULL, NULL );
+	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, numWorkgroups, hC, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 		die( "clEnqueueReadBuffer failed\n" );
+	Wait( cmdQueue );
+
+	float sum = 0;
+	for (int i = 0; i < numWorkgroups; i++) {
+		sum += hC[i];
+	}
 
 	// did it work?
-
+	float expected = 0.0f;
 	for( int i = 0; i < NUM_ELEMENTS; i++ )
 	{
-		float expected = hA[i] * hB[i];
-		if( fabs( hC[i] - expected ) > TOL )
-		{
-			fprintf( stderr, "%4d: %13.6f * %13.6f wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
-				i, hA[i], hB[i], hC[i], expected, fabs(hC[i]-expected) );
-			fprintf( stderr, "%4d:    0x%08x *    0x%08x wrongly produced    0x%08x instead of    0x%08x\n",
-				i, LookAtTheBits(hA[i]), LookAtTheBits(hB[i]), LookAtTheBits(hC[i]), LookAtTheBits(expected) );
-		}
+		expected += hA[i] * hB[i];
+	}
+	if( fabs( sum - expected ) > TOL )
+	{
+		fprintf( stderr, "wrongly produced %13.6f instead of %13.6f (%13.8f)\n",
+			sum, expected, fabs(sum-expected) );
+		fprintf( stderr, "wrongly produced    0x%08x instead of    0x%08x\n",
+			LookAtTheBits(sum), LookAtTheBits(expected) );
 	}
 
 	printf( "%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
-		NMB, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
+		NMB, LOCAL_SIZE, numWorkgroups, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
 
 #ifdef WIN32
 	Sleep( 2000 );
