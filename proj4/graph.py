@@ -19,6 +19,11 @@ with open(filename) as f:
         row = [float(x) for x in line.split()]
         data.append(row)
 
+if len(sys.argv) >= 3:
+    prefix = sys.argv[2] + "-"
+else:
+    prefix = ""
+
 data = numpy.array(data)
 
 def do_plot(x, ys, xlabel='month', ylabels=[], outfilename='figure.png', logscale=False):
@@ -62,6 +67,6 @@ for i, n in enumerate(x):
         midindex = i
     else:
         break
-do_plot(x[:smallindex], ys[:, :smallindex] , xlabel='array size', ylabels=labels, outfilename="small.png")
-do_plot(x[:midindex], ys[:, :midindex] , xlabel='array size', ylabels=labels, outfilename="mid.png")
-do_plot(x, ys, xlabel='array size', ylabels=labels, outfilename="large.png")
+do_plot(x[:smallindex], ys[:, :smallindex] , xlabel='array size', ylabels=labels, outfilename=prefix+"small.png")
+do_plot(x[:midindex], ys[:, :midindex] , xlabel='array size', ylabels=labels, outfilename=prefix+"mid.png")
+do_plot(x, ys, xlabel='array size', ylabels=labels, outfilename=prefix+"large.png")

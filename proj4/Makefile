@@ -16,6 +16,11 @@ graph: small.png
 small.png: graph.py proj$N.data Makefile
 	python2 graph.py proj$N.data
 
-files=main.c simd.p4.* Makefile
+table: table.txt
+table.txt: table.py proj$N.data Makefile
+	python2 table.py proj$N.data > table.txt
+
+
+files=main.c proj4.data proj4-O0.data proj4-O3.data simd.p4.* Makefile
 zip: $(files)
 	zip proj$N.zip $(files)
