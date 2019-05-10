@@ -1,11 +1,5 @@
 #include "simd.p4.h"
 
-// July 13, 2017: mjb -- changed rbx register to r8
-// The convention is that rbx needs to be saved by the callee (i.e., pushed and popped),
-// 	but rcx, rdx, r8, and r9 do not
-// This fixed the bug that showed up in cs 475/575 project #5 in SQ 2017
-
-
 void
 SimdMul( float *a, float *b,   float *c,   int len )
 {
@@ -35,8 +29,6 @@ SimdMul( float *a, float *b,   float *c,   int len )
 		c[i] = a[i] * b[i];
 	}
 }
-
-
 
 float
 SimdMulSum( float *a, float *b, int len )
@@ -86,7 +78,6 @@ float
 NonSimdMulSum( float *a, float *b, int len )
 {
 	float sum[4] = { 0., 0., 0., 0. };
-	//int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
 
 	for( int i = 0; i < len; i++ )
 	{
