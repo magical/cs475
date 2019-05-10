@@ -41,6 +41,37 @@ void die(const char* msg) {
 int
 main( int argc, char *argv[ ] )
 {
+	// 0. read program arguments
+
+	ssize_t numElements = NUM_ELEMENTS;
+	ssize_t localSize = LOCAL_SIZE;
+
+	if (argc > 2) {
+		unsigned int v = atoi(argv[2]);
+		if (v > 0) {
+			// round up to a power of 2
+			// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+			v--;
+			v |= v >> 1;
+			v |= v >> 2;
+			v |= v >> 4;
+			v |= v >> 8;
+			v |= v >> 16;
+			v |= v >> 16;
+			v++;
+
+			localSize = v;
+		}
+	}
+	if (argc > 1) {
+		int numMB = atoi(argv[1]);
+		numElements = (ssize_t)numMB << 20; // megabytes
+		// round up to a multiple of localSize
+		numElements += (-numElements)&(localSize-1);
+	}
+
+	ssize_t numWorkgroups = numElements/localSize;
+
 	// see if we can even open the opencl kernel program
 	// (no point going on if we can't):
 
@@ -77,18 +108,18 @@ main( int argc, char *argv[ ] )
 
 	// 2. allocate the host memory buffers:
 
-	float *hA = new float[ NUM_ELEMENTS ];
-	float *hB = new float[ NUM_ELEMENTS ];
-	float *hC = new float[ NUM_ELEMENTS ];
+	float *hA = new float[ numElements ];
+	float *hB = new float[ numElements ];
+	float *hC = new float[ numElements ];
 
 	// fill the host memory buffers:
 
-	for( int i = 0; i < NUM_ELEMENTS; i++ )
+	for( int i = 0; i < numElements; i++ )
 	{
 		hA[i] = hB[i] = (float) sqrt(  (double)i  );
 	}
 
-	size_t dataSize = NUM_ELEMENTS * sizeof(float);
+	size_t dataSize = numElements * sizeof(float);
 
 	// 3. create an opencl context:
 
@@ -186,8 +217,8 @@ main( int argc, char *argv[ ] )
 
 	// 11. enqueue the kernel object for execution:
 
-	size_t globalWorkSize[3] = { NUM_ELEMENTS, 1, 1 };
-	size_t localWorkSize[3]  = { LOCAL_SIZE,   1, 1 };
+	size_t globalWorkSize[3] = { (size_t)numElements, 1, 1 };
+	size_t localWorkSize[3]  = { (size_t)localSize,   1, 1 };
 
 	Wait( cmdQueue );
 	double time0 = omp_get_wtime( );
@@ -211,7 +242,7 @@ main( int argc, char *argv[ ] )
 
 	// did it work?
 
-	for( int i = 0; i < NUM_ELEMENTS; i++ )
+	for( int i = 0; i < numElements; i++ )
 	{
 		float expected = hA[i] * hB[i];
 		if( fabs( hC[i] - expected ) > TOL )
@@ -223,8 +254,8 @@ main( int argc, char *argv[ ] )
 		}
 	}
 
-	printf( "%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
-		NMB, LOCAL_SIZE, NUM_WORK_GROUPS, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
+	printf( "%8zd\t%4zd\t%10zd\t%10.3lf GigaMultsPerSecond\n",
+		numElements, localSize, numWorkgroups, (double)numElements/(time1-time0)/1000000000. );
 
 #ifdef WIN32
 	Sleep( 2000 );
