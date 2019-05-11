@@ -38,6 +38,17 @@ void die(const char* msg) {
 	exit(1);
 }
 
+bool endswith(const char* s, char suffix) {
+	int i;
+	if (s[0] == '\0') {
+		return false;
+	}
+	for (i = 1; s[i] != '\0'; i++) {
+		/* find the end of s */
+	}
+	return s[i-1] == suffix;
+}
+
 int
 main( int argc, char *argv[ ] )
 {
@@ -64,8 +75,14 @@ main( int argc, char *argv[ ] )
 		}
 	}
 	if (argc > 1) {
-		int numMB = atoi(argv[1]);
-		numElements = (ssize_t)numMB << 20; // megabytes
+		int v = atoi(argv[1]);
+		if (endswith(argv[1], 'M')) {
+			numElements = (ssize_t)v << 20; // mebibytes
+		} else if (endswith(argv[1], 'K')) {
+			numElements = (ssize_t)v << 10; // kibibytes
+		} else {
+			numElements = (ssize_t)v;
+		}
 		// round up to a multiple of localSize
 		numElements += (-numElements)&(localSize-1);
 	}
