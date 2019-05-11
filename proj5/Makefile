@@ -16,6 +16,6 @@ data: first
 data2: muladd
 	for local in 32 64 128 256 512; do \
 		for n in 1K 4K 16K 64K 512K 1M 8M 64M; do \
-			./first $$n $$local ; \
+			./muladd $$n $$local ; \
 		done ; \
 	done | tee p5muladd.data
