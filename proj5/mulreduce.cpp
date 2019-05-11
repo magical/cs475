@@ -25,8 +25,6 @@
 #define	LOCAL_SIZE		64
 #endif
 
-const int numWorkgroups = 	NUM_ELEMENTS/LOCAL_SIZE;
-
 const char *			CL_FILE_NAME = { "mulreduce.cl" };
 const float			TOL = 0.0001f;
 
@@ -38,9 +36,57 @@ void die(const char* msg) {
 	exit(1);
 }
 
+bool endswith(const char* s, char suffix) {
+	int i;
+	if (s[0] == '\0') {
+		return false;
+	}
+	for (i = 1; s[i] != '\0'; i++) {
+		/* find the end of s */
+	}
+	return s[i-1] == suffix;
+}
+
 int
 main( int argc, char *argv[ ] )
 {
+	// 0. read program arguments
+
+	ssize_t numElements = NUM_ELEMENTS;
+	ssize_t localSize = LOCAL_SIZE;
+
+	if (argc > 2) {
+		unsigned int v = atoi(argv[2]);
+		if (v > 0) {
+			// round up to a power of 2
+			// https://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+			v--;
+			v |= v >> 1;
+			v |= v >> 2;
+			v |= v >> 4;
+			v |= v >> 8;
+			v |= v >> 16;
+			v |= v >> 16;
+			v++;
+
+			localSize = v;
+		}
+	}
+	if (argc > 1) {
+		int v = atoi(argv[1]);
+		if (endswith(argv[1], 'M')) {
+			numElements = (ssize_t)v << 20; // mebibytes
+		} else if (endswith(argv[1], 'K')) {
+			numElements = (ssize_t)v << 10; // kibibytes
+		} else {
+			numElements = (ssize_t)v;
+		}
+		// round up to a multiple of localSize
+		numElements += (-numElements)&(localSize-1);
+	}
+
+	ssize_t numWorkgroups = numElements/localSize;
+
 	// see if we can even open the opencl kernel program
 	// (no point going on if we can't):
 
@@ -77,18 +123,18 @@ main( int argc, char *argv[ ] )
 
 	// 2. allocate the host memory buffers:
 
-	float *hA = new float[ NUM_ELEMENTS ];
-	float *hB = new float[ NUM_ELEMENTS ];
-	float *hC = new float[ NUM_ELEMENTS ];
+	float *hA = new float[ numElements ];
+	float *hB = new float[ numElements ];
+	float *hC = new float[ numElements ];
 
 	// fill the host memory buffers:
 
-	for( int i = 0; i < NUM_ELEMENTS; i++ )
+	for( int i = 0; i < numElements; i++ )
 	{
 		hA[i] = hB[i] = (float) sqrt(  (double)i  );
 	}
 
-	size_t dataSize = NUM_ELEMENTS * sizeof(float);
+	size_t dataSize = numElements * sizeof(float);
 	size_t cSize = numWorkgroups * sizeof(float);
 
 	// 3. create an opencl context:
@@ -183,7 +229,7 @@ main( int argc, char *argv[ ] )
 	if( status != CL_SUCCESS )
 		die( "clSetKernelArg failed (2)\n" );
 
-	status = clSetKernelArg( kernel, 2, LOCAL_SIZE*sizeof(float), NULL);
+	status = clSetKernelArg( kernel, 2, localSize*sizeof(float), NULL);
 	if( status != CL_SUCCESS )
 		die( "clSetKernelArg failed (3)\n" );
 
@@ -194,8 +240,8 @@ main( int argc, char *argv[ ] )
 
 	// 11. enqueue the kernel object for execution:
 
-	size_t globalWorkSize[3] = { NUM_ELEMENTS, 1, 1 };
-	size_t localWorkSize[3]  = { LOCAL_SIZE,   1, 1 };
+	size_t globalWorkSize[3] = { numElements, 1, 1 };
+	size_t localWorkSize[3]  = { localSize,   1, 1 };
 
 	Wait( cmdQueue );
 	double time0 = omp_get_wtime( );
@@ -213,19 +259,20 @@ main( int argc, char *argv[ ] )
 
 	// 12. read the results buffer back from the device to the host:
 
-	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, numWorkgroups, hC, 0, NULL, NULL );
+	status = clEnqueueReadBuffer( cmdQueue, dC, CL_TRUE, 0, cSize, hC, 0, NULL, NULL );
 	if( status != CL_SUCCESS )
 		die( "clEnqueueReadBuffer failed\n" );
 	Wait( cmdQueue );
 
-	float sum = 0;
+	float sum = 0.;
 	for (int i = 0; i < numWorkgroups; i++) {
+		//printf("hC[%d] = %f\n", i, hC[i]);
 		sum += hC[i];
 	}
 
 	// did it work?
 	float expected = 0.0f;
-	for( int i = 0; i < NUM_ELEMENTS; i++ )
+	for( int i = 0; i < numElements; i++ )
 	{
 		expected += hA[i] * hB[i];
 	}
@@ -237,8 +284,8 @@ main( int argc, char *argv[ ] )
 			LookAtTheBits(sum), LookAtTheBits(expected) );
 	}
 
-	printf( "%8d\t%4d\t%10d\t%10.3lf GigaMultsPerSecond\n",
-		NMB, LOCAL_SIZE, numWorkgroups, (double)NUM_ELEMENTS/(time1-time0)/1000000000. );
+	printf( "%8zd\t%4zd\t%10zd\t%10.3lf GigaMultsPerSecond\n",
+		numElements, localSize, numWorkgroups, (double)numElements/(time1-time0)/1000000000. );
 
 #ifdef WIN32
 	Sleep( 2000 );
