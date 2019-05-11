@@ -1,0 +1,40 @@
+    1024	  32	        32	     0.015 GigaMultsPerSecond
+    4096	  32	       128	     0.113 GigaMultsPerSecond
+   16384	  32	       512	     0.434 GigaMultsPerSecond
+   65536	  32	      2048	     1.343 GigaMultsPerSecond
+  524288	  32	     16384	     1.014 GigaMultsPerSecond
+ 1048576	  32	     32768	     3.238 GigaMultsPerSecond
+ 8388608	  32	    262144	     7.711 GigaMultsPerSecond
+67108864	  32	   2097152	    10.210 GigaMultsPerSecond
+    1024	  64	        16	     0.026 GigaMultsPerSecond
+    4096	  64	        64	     0.112 GigaMultsPerSecond
+   16384	  64	       256	     0.450 GigaMultsPerSecond
+   65536	  64	      1024	     0.908 GigaMultsPerSecond
+  524288	  64	      8192	     2.516 GigaMultsPerSecond
+ 1048576	  64	     16384	     4.309 GigaMultsPerSecond
+ 8388608	  64	    131072	    10.766 GigaMultsPerSecond
+67108864	  64	   1048576	    15.429 GigaMultsPerSecond
+    1024	 128	         8	     0.021 GigaMultsPerSecond
+    4096	 128	        32	     0.115 GigaMultsPerSecond
+   16384	 128	       128	     0.445 GigaMultsPerSecond
+   65536	 128	       512	     1.672 GigaMultsPerSecond
+  524288	 128	      4096	     2.574 GigaMultsPerSecond
+ 1048576	 128	      8192	     4.423 GigaMultsPerSecond
+ 8388608	 128	     65536	    11.280 GigaMultsPerSecond
+67108864	 128	    524288	    16.884 GigaMultsPerSecond
+    1024	 256	         4	     0.015 GigaMultsPerSecond
+    4096	 256	        16	     0.115 GigaMultsPerSecond
+   16384	 256	        64	     0.237 GigaMultsPerSecond
+   65536	 256	       256	     0.711 GigaMultsPerSecond
+  524288	 256	      2048	     2.577 GigaMultsPerSecond
+ 1048576	 256	      4096	     4.391 GigaMultsPerSecond
+ 8388608	 256	     32768	    11.177 GigaMultsPerSecond
+67108864	 256	    262144	    16.714 GigaMultsPerSecond
+    1024	 512	         2	     0.015 GigaMultsPerSecond
+    4096	 512	         8	     0.118 GigaMultsPerSecond
+   16384	 512	        32	     0.230 GigaMultsPerSecond
+   65536	 512	       128	     0.914 GigaMultsPerSecond
+  524288	 512	      1024	     2.494 GigaMultsPerSecond
+ 1048576	 512	      2048	     4.369 GigaMultsPerSecond
+ 8388608	 512	     16384	    11.279 GigaMultsPerSecond
+67108864	 512	    131072	    16.062 GigaMultsPerSecond
