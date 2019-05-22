@@ -3,7 +3,7 @@
 #OPENCL=./libOpenCL.so.1
 OPENCL=-lOpenCL
 
-all: first muladd
+all: first muladd mulreduce
 %: %.cpp Makefile
 	$(CXX)  -o $@ $< -O2 $(OPENCL) -lm -fopenmp -Wall -Wno-deprecated-declarations -ggdb -Wl,-rpath=.
 
@@ -25,3 +25,11 @@ data3: mulreduce
 			./mulreduce $$n $$local ; \
 		done ; \
 	done | tee p5mulreduce.data
+
+graphs:
+	python graph2.py proj5.data p5muladd.data combined
+	python graph.py p5mulreduce.data p5mulreduce
+
+files=*.cpp *.cl graph.py graph2.py Makefile
+zip: $(files)
+	zip proj5.zip $(files)
