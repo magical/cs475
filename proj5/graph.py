@@ -56,7 +56,7 @@ def do_plot(x, ys, xlabel='threads', ylabels=[], outfilename='figure.png', logsc
         l, = ax.plot(x, y, c = c, marker=m)
         #_ = ax.scatter(x, y, c = c, marker=m)
         lines.append(l)
-    ax.set(xlabel = xlabel, ylabel = 'performance (million ops/s)')
+    ax.set(xlabel = xlabel, ylabel = 'performance (billion ops/s)')
     if ylabels:
         ax.legend(lines, ylabels, ncol=4, loc='best',
                     fancybox=True, shadow=True)
@@ -70,4 +70,31 @@ global_labels = ["%sK" % (x/1024) if x < (1<<20) else "%sM" % (x/1024/1024)  for
 do_plot(numpy.array(numglobal)/1024, numpy.transpose(data), xlabel='Global work size (Ki)', ylabels=map(str, numlocal), outfilename=prefix+"-global.png")
 do_plot(numlocal, data, xlabel='Local work size (elements)', ylabels=global_labels, outfilename=prefix+"-local.png", override_xticks=True)
 
-# TODO: print table too
+def print_table(data):
+    lengths = numpy.vectorize(lambda x: len(str(x)))(data)
+    colwidth = numpy.max(lengths, axis=0)
+    labelwidth = max(len(str(x)) for x in numglobal)
+
+    def printline():
+        s = " " * labelwidth + " +-"
+        for i in range(len(data[0])):
+            if i > 0:
+                s += "-+-"
+            if i >= 0:
+                s += "-"*colwidth[i]
+        print(s+"-+")
+
+    s = ""
+    for i, val in enumerate(numlocal):
+        s += "   " + str(val).rjust(colwidth[i])
+    print(" " * labelwidth + s)
+    printline()
+    for j, row in enumerate(data):
+        label = str(numglobal[j]).rjust(labelwidth)
+        s = ""
+        for i, val in enumerate(row):
+            s += " | " + str(val).rjust(colwidth[i])
+        print(label + s + " |")
+    printline()
+
+print_table(data)
