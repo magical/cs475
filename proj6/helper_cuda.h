@@ -800,13 +800,13 @@ inline int findCudaDevice(int argc, const char **argv) {
     devID = getCmdLineArgumentInt(argc, argv, "device=");
 
     if (devID < 0) {
-      printf("Invalid command line parameter\n ");
+      fprintf(stderr, "Invalid command line parameter\n ");
       exit(EXIT_FAILURE);
     } else {
       devID = gpuDeviceInit(devID);
 
       if (devID < 0) {
-        printf("exiting...\n");
+        fprintf(stderr, "exiting...\n");
         exit(EXIT_FAILURE);
       }
     }
@@ -815,7 +815,7 @@ inline int findCudaDevice(int argc, const char **argv) {
     devID = gpuGetMaxGflopsDeviceId();
     checkCudaErrors(cudaSetDevice(devID));
     checkCudaErrors(cudaGetDeviceProperties(&deviceProp, devID));
-    printf("GPU Device %d: \"%s\" with compute capability %d.%d\n\n", devID,
+    fprintf(stderr, "GPU Device %d: \"%s\" with compute capability %d.%d\n", devID,
            deviceProp.name, deviceProp.major, deviceProp.minor);
   }
 
