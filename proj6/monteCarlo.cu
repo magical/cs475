@@ -190,25 +190,17 @@ main( int argc, char* argv[ ] )
 	float *dXcs, *dYcs, *dRs;
 	int *dHits;
 
-	cudaError_t status;
-	status = cudaMalloc( reinterpret_cast<void **>(&dXcs), numtrials*sizeof(float) );
-	checkCudaErrors( status );
-	status = cudaMalloc( reinterpret_cast<void **>(&dYcs), numtrials*sizeof(float) );
-	checkCudaErrors( status );
-	status = cudaMalloc( reinterpret_cast<void **>(&dRs), numtrials*sizeof(float) );
-	checkCudaErrors( status );
-	status = cudaMalloc( reinterpret_cast<void **>(&dHits), numtrials*sizeof(int) );
-	checkCudaErrors( status );
+	checkCudaErrors( cudaMalloc( reinterpret_cast<void **>(&dXcs), numtrials*sizeof(float) ) );
+	checkCudaErrors( cudaMalloc( reinterpret_cast<void **>(&dYcs), numtrials*sizeof(float) ) );
+	checkCudaErrors( cudaMalloc( reinterpret_cast<void **>(&dRs), numtrials*sizeof(float) ) );
+	checkCudaErrors( cudaMalloc( reinterpret_cast<void **>(&dHits), numtrials*sizeof(int) ) );
 
 
 	// copy host memory to the device:
 
-	status = cudaMemcpy( dXcs, xcs, numtrials*sizeof(float), cudaMemcpyHostToDevice );
-	checkCudaErrors( status );
-	status = cudaMemcpy( dYcs, ycs, numtrials*sizeof(float), cudaMemcpyHostToDevice );
-	checkCudaErrors( status );
-	status = cudaMemcpy( dRs, rs, numtrials*sizeof(float), cudaMemcpyHostToDevice );
-	checkCudaErrors( status );
+	checkCudaErrors( cudaMemcpy( dXcs, xcs, numtrials*sizeof(float), cudaMemcpyHostToDevice ) );
+	checkCudaErrors( cudaMemcpy( dYcs, ycs, numtrials*sizeof(float), cudaMemcpyHostToDevice ) );
+	checkCudaErrors( cudaMemcpy( dRs, rs, numtrials*sizeof(float), cudaMemcpyHostToDevice ) );
 
 	// setup the execution parameters:
 
@@ -222,12 +214,12 @@ main( int argc, char* argv[ ] )
 	// allocate CUDA events that we'll use for timing:
 
 	cudaEvent_t start, stop;
-	status = cudaEventCreate( &start ); checkCudaErrors( status );
-	status = cudaEventCreate( &stop ); checkCudaErrors( status );
+	checkCudaErrors( cudaEventCreate( &start ) );
+	checkCudaErrors( cudaEventCreate( &stop ) );
 
 	// record the start event:
 
-	status = cudaEventRecord( start, NULL ); checkCudaErrors( status );
+	checkCudaErrors( cudaEventRecord( start, NULL ) );
 
 	// execute the kernel:
 
@@ -235,22 +227,18 @@ main( int argc, char* argv[ ] )
 
 	// record the stop event:
 
-	status = cudaEventRecord( stop, NULL );
-		checkCudaErrors( status );
+	checkCudaErrors( cudaEventRecord( stop, NULL ) );
 
 	// wait for the stop event to complete:
 
-	status = cudaEventSynchronize( stop );
-		checkCudaErrors( status );
+	checkCudaErrors( cudaEventSynchronize( stop ) );
 
 	float msecTotal = 0.0f;
-	status = cudaEventElapsedTime( &msecTotal, start, stop );
-		checkCudaErrors( status );
+	checkCudaErrors( cudaEventElapsedTime( &msecTotal, start, stop ) );
 
 	// copy result from the device to the host:
 
-	status = cudaMemcpy( hits, dHits, numtrials*sizeof(int), cudaMemcpyDeviceToHost );
-	checkCudaErrors( status );
+	checkCudaErrors( cudaMemcpy( hits, dHits, numtrials*sizeof(int), cudaMemcpyDeviceToHost ) );
 
 	int numHits = 0;
 	for (int i = 0; i < numtrials; i++) {
@@ -267,8 +255,7 @@ main( int argc, char* argv[ ] )
 	printf("%d\t%d\t%.4f\t%.3f\n", blocksize, numtrials, (double)numHits/numtrials, megaMultsPerSecond);
 
 	/* 
-	status = cudaMemcpy( hC, dC, (SIZE/BLOCKSIZE)*sizeof(float), cudaMemcpyDeviceToHost );
-		checkCudaErrors( status );
+	checkCudaErrors( cudaMemcpy( hC, dC, (SIZE/BLOCKSIZE)*sizeof(float), cudaMemcpyDeviceToHost ) );
 
 	// check the sum :
 
@@ -287,10 +274,10 @@ main( int argc, char* argv[ ] )
 	delete [ ] rs;
 	delete [ ] hits;
 
-	status = cudaFree( dXcs ); checkCudaErrors( status );
-	status = cudaFree( dYcs ); checkCudaErrors( status );
-	status = cudaFree( dRs ); checkCudaErrors( status );
-	status = cudaFree( dHits ); checkCudaErrors( status );
+	checkCudaErrors( cudaFree( dXcs ) );
+	checkCudaErrors( cudaFree( dYcs ) );
+	checkCudaErrors( cudaFree( dRs ) );
+	checkCudaErrors( cudaFree( dHits ) );
 
 
 	return 0;
