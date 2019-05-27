@@ -247,13 +247,6 @@ main( int argc, char* argv[ ] )
 	status = cudaEventElapsedTime( &msecTotal, start, stop );
 		checkCudaErrors( status );
 
-	// compute and print the performance
-
-	double secondsTotal = 0.001 * (double)msecTotal;
-	double multsPerSecond = (float)numtrials / secondsTotal;
-	double megaMultsPerSecond = multsPerSecond / 1000000.;
-	fprintf( stderr, "Array Size = %10d, MegaMultReductions/Second = %10.2lf\n", numtrials, megaMultsPerSecond );
-
 	// copy result from the device to the host:
 
 	status = cudaMemcpy( hits, dHits, numtrials*sizeof(int), cudaMemcpyDeviceToHost );
@@ -264,7 +257,14 @@ main( int argc, char* argv[ ] )
 		numHits += hits[i];
 	}
 
-	printf("Num hits = %d, hit rate = %.4f\n", numHits, (double)numHits / numtrials);
+	// compute and print the performance
+
+	double secondsTotal = 1e-3 * (double)msecTotal;
+	double multsPerSecond = (float)numtrials / secondsTotal;
+	double megaMultsPerSecond = multsPerSecond / 1e6;
+	//fprintf( stderr, "Array Size = %10d, MegaMultReductions/Second = %10.2lf\n", numtrials, megaMultsPerSecond );
+	//printf("Num hits = %d, hit rate = %.4f\n", numHits, (double)numHits / numtrials);
+	printf("%d\t%d\t%.4f\t%.3f\n", blocksize, numtrials, (double)numHits/numtrials, megaMultsPerSecond);
 
 	/* 
 	status = cudaMemcpy( hC, dC, (SIZE/BLOCKSIZE)*sizeof(float), cudaMemcpyDeviceToHost );
