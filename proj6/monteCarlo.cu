@@ -132,6 +132,8 @@ __global__ void MonteCarlo( float *xcs, float *ycs, float *rs, int *hits )
 	// Otherwise, this beam hit the infinite plate. (Case D)
 	hits[globalThreadId] = 1;
 
+	// TODO: do a reduction?
+
 }
 
 float Ranf( float low, float high )
@@ -149,9 +151,25 @@ main( int argc, char* argv[ ] )
 {
 	int dev = findCudaDevice(argc, (const char **)argv);
 
-	// allocate host memory:
+	// Some default parameters
 	int numtrials = SIZE;
+	int blocksize = BLOCKSIZE;
 
+	// Parse command line arguments
+	if (argc > 1) {
+		int v = atoi(argv[1]);
+		if (v > 0) {
+			numtrials = v;
+		}
+	}
+	if (argc > 2) {
+		int v = atoi(argv[1]);
+		if (v > 0 && v < 512) {
+			numtrials = v;
+		}
+	}
+
+	// allocate host memory:
 	// better to define these here so that the rand() calls don't get into the thread timing:
 	float *xcs = new float[ numtrials ];
 	float *ycs = new float[ numtrials ];
@@ -171,13 +189,6 @@ main( int argc, char* argv[ ] )
 
 	float *dXcs, *dYcs, *dRs;
 	int *dHits;
-
-	//dim3 dimsA( SIZE, 1, 1 );
-	//dim3 dimsB( SIZE, 1, 1 );
-	//dim3 dimsC( SIZE/BLOCKSIZE, 1, 1 );
-
-	//__shared__ float prods[SIZE/BLOCKSIZE];
-
 
 	cudaError_t status;
 	status = cudaMalloc( reinterpret_cast<void **>(&dXcs), numtrials*sizeof(float) );
@@ -201,7 +212,7 @@ main( int argc, char* argv[ ] )
 
 	// setup the execution parameters:
 
-	dim3 threads(BLOCKSIZE, 1, 1 );
+	dim3 threads(blocksize, 1, 1 );
 	dim3 grid( numtrials / threads.x, 1, 1 );
 
 	// Create and start timer
@@ -211,15 +222,12 @@ main( int argc, char* argv[ ] )
 	// allocate CUDA events that we'll use for timing:
 
 	cudaEvent_t start, stop;
-	status = cudaEventCreate( &start );
-		checkCudaErrors( status );
-	status = cudaEventCreate( &stop );
-		checkCudaErrors( status );
+	status = cudaEventCreate( &start ); checkCudaErrors( status );
+	status = cudaEventCreate( &stop ); checkCudaErrors( status );
 
 	// record the start event:
 
-	status = cudaEventRecord( start, NULL );
-		checkCudaErrors( status );
+	status = cudaEventRecord( start, NULL ); checkCudaErrors( status );
 
 	// execute the kernel:
 
