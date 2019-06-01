@@ -164,7 +164,7 @@ main( int argc, char* argv[ ] )
 	}
 	if (argc > 2) {
 		int v = atoi(argv[2]);
-		if (v > 0 && v < 512) {
+		if (v > 0 && v <= 4096) {
 			blocksize = v;
 		}
 	}
