@@ -11,12 +11,38 @@
 #define NUMTRIES	10
 #endif
 
-float AutoCorrelate(float *array, int size, int shift) {
-	float sum = 0.;
-	for (int i = 0; i < size; i++) {
-		sum += array[i] * array[i + shift];
+float SimdAutoCorrelate( float *array, int len, int shift )
+{
+	const int SSE_WIDTH = 4;
+	float sum[4] = { 0., 0., 0., 0. };
+	int limit = ( len/SSE_WIDTH ) * SSE_WIDTH;
+
+	{
+		float *a0 = array, *a1 = &array[shift];
+		register __int128 sum0 __asm ("xmm2") = 0;
+		for (int i = 0; i < limit; i += SSE_WIDTH) {
+			__asm (
+				".att_syntax\n\t"
+				"movups	(%0), %%xmm0\n\t"	// load the first sse register
+				"movups	(%1), %%xmm1\n\t"	// load the second sse register
+				"mulps	%%xmm1, %%xmm0\n\t"	// do the multiply
+				"addps	%%xmm0, %2\n\t"	// do the add
+				"addq $16, %0\n\t"
+				"addq $16, %1\n\t"
+				: /* outputs */ "+r" (a0), "+r" (a1), "+x" (sum0)
+				: /* inputs */ "m" (*a0), "m" (*a1)
+				: /* clobbers */ "xmm0", "xmm1"
+			);
+		}
+		__asm ("movups %1,%0" : "=m" (sum) : "x" (sum0) : /*no clobbers*/);
 	}
-	return sum;
+
+	for( int i = limit; i < len; i++ )
+	{
+		sum[0] += array[i] * array[i + shift];
+	}
+
+	return sum[0] + sum[1] + sum[2] + sum[3];
 }
 
 // main program:
@@ -54,7 +80,7 @@ main( int argc, char *argv[ ] )
 		#pragma omp parallel for default(none) shared(array, sums, size)
 		for( int shift = 0; shift < size; shift++ )
 		{
-			sums[shift] = AutoCorrelate(array, size, shift);
+			sums[shift] = SimdAutoCorrelate(array, size, shift);
 		}
 		double time1 = omp_get_wtime( );
 		double d = time1 - time0;

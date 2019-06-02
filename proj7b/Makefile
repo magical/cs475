@@ -2,7 +2,7 @@ CUDA_PATH	=	/usr/local/apps/cuda/cuda-10.0
 CUDA_BIN_PATH	=	$(CUDA_PATH)/bin
 CUDA_NVCC	=	$(CUDA_BIN_PATH)/nvcc
 
-all: cuda omp
+all: omp simd cuda
 
 %:	%.cu read.o Makefile
 	$(CUDA_NVCC) -o $@ $< read.o
@@ -18,7 +18,7 @@ graphs:
 test:
 	./omp 1 >p7omp1.data
 	./omp 8 >p7omp8.data
-	#./simd > p7simd.data
+	./simd > p7simd.data
 	./cuda >p7cuda.data
 
 files=cuda.cu plot.py *.h Makefile
