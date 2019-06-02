@@ -4,8 +4,10 @@ CUDA_NVCC	=	$(CUDA_BIN_PATH)/nvcc
 
 all: cuda
 
-%:	%.cu Makefile
-	$(CUDA_NVCC) -o $@ $<
+%:	%.cu read.o Makefile
+	$(CUDA_NVCC) -o $@ $< read.o
+
+read.o: read.cpp Makefile
 
 graphs:
 	python2 graph.py proj6.data

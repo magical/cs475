@@ -15,14 +15,9 @@
 //#include "helper_functions.h"
 #include "helper_cuda.h"
 
+#include "read.h"
 
-#ifndef BLOCKSIZE
-#define BLOCKSIZE		32		// number of threads per block
-#endif
-
-#ifndef SIZE
-#define SIZE			1*1024*1024	// array size
-#endif
+const int BLOCKSIZE = 256; // number of threads per block
 
 
 __global__ void AutoCorrelate(float *dArray, float *dSums, int size) {
@@ -44,42 +39,29 @@ main( int argc, char* argv[ ] )
 {
 	int dev = findCudaDevice(argc, (const char **)argv);
 
-	// allocate host memory:
+	// read input data & allocate host memory:
 
-	float * hA = new float [ SIZE ];
-	float * hB = new float [ SIZE ];
-	float * hC = new float [ SIZE/BLOCKSIZE ];
+	float *hArray = NULL;
+	int size = 0;
+	ReadData("signal.txt", &hArray, &size);
 
-	for( int i = 0; i < SIZE; i++ )
-	{
-		hA[i] = hB[i] = (float) sqrt(  (float)(i+1)  );
-	}
+	float *hSums = new float[size];
 
 	// allocate device memory:
 
-	float *dA, *dB, *dC;
+	float *dArray, *dSums;
 
-	dim3 dimsA( SIZE, 1, 1 );
-	dim3 dimsB( SIZE, 1, 1 );
-	dim3 dimsC( SIZE/BLOCKSIZE, 1, 1 );
-
-	//__shared__ float prods[SIZE/BLOCKSIZE];
-
-
-	checkCudaErrors(cudaMalloc( reinterpret_cast<void **>(&dA), SIZE*sizeof(float) ));
-	checkCudaErrors(cudaMalloc( reinterpret_cast<void **>(&dB), SIZE*sizeof(float) ));
-	checkCudaErrors(cudaMalloc( reinterpret_cast<void **>(&dC), (SIZE/BLOCKSIZE)*sizeof(float) ));
-
+	checkCudaErrors(cudaMalloc( reinterpret_cast<void **>(&dArray), 2*size*sizeof(float) ));
+	checkCudaErrors(cudaMalloc( reinterpret_cast<void **>(&dSums), size*sizeof(float) ));
 
 	// copy host memory to the device:
 
-	checkCudaErrors(cudaMemcpy( dA, hA, SIZE*sizeof(float), cudaMemcpyHostToDevice ));
-	checkCudaErrors(cudaMemcpy( dB, hB, SIZE*sizeof(float), cudaMemcpyHostToDevice ));
+	checkCudaErrors(cudaMemcpy( dArray, hArray, 2*size*sizeof(float), cudaMemcpyHostToDevice ));
 
 	// setup the execution parameters:
 
 	dim3 threads(BLOCKSIZE, 1, 1 );
-	dim3 grid( SIZE / threads.x, 1, 1 );
+	dim3 grid( size / threads.x, 1, 1 );
 
 	// Create and start timer
 
@@ -97,7 +79,7 @@ main( int argc, char* argv[ ] )
 
 	// execute the kernel:
 
-	AutoCorrelate<<< grid, threads >>>( dA, dB, dC );
+	AutoCorrelate<<< grid, threads >>>( dArray, dSums, size );
 
 	// record the stop event:
 
@@ -113,22 +95,24 @@ main( int argc, char* argv[ ] )
 	// compute and print the performance
 
 	double secondsTotal = 0.001 * (double)msecTotal;
-	double multsPerSecond = (float)SIZE / secondsTotal;
-	double megaMultsPerSecond = multsPerSecond / 1000000.;
-	fprintf( stderr, "Array Size = %10d, MegaMultReductions/Second = %10.2lf\n", SIZE, megaMultsPerSecond );
+	double multsPerSecond = (float)size / secondsTotal;
+	double kiloMultsPerSecond = multsPerSecond / 1e3;
+	fprintf( stderr, "Array Size = %10d, KiloAutoCorrelates/Second = %10.2lf\n", size, kiloMultsPerSecond );
 
 	// copy result from the device to the host:
 
-	checkCudaErrors(cudaMemcpy( hC, dC, (SIZE/BLOCKSIZE)*sizeof(float), cudaMemcpyDeviceToHost ));
+	checkCudaErrors(cudaMemcpy( hSums, dSums, size*sizeof(float), cudaMemcpyDeviceToHost ));
+
+	for (int i = 1; i <= 512; i++ ) {
+		printf("%d %f\n", i, hSums[i]);
+	}
 
 	// clean up memory:
-	delete [ ] hA;
-	delete [ ] hB;
-	delete [ ] hC;
+	delete [ ] hArray;
+	delete [ ] hSums;
 
-	checkCudaErrors(cudaFree( dA ));
-	checkCudaErrors(cudaFree( dB ));
-	checkCudaErrors(cudaFree( dC ));
+	checkCudaErrors(cudaFree( dArray ));
+	checkCudaErrors(cudaFree( dSums ));
 
 
 	return 0;
