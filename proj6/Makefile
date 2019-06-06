@@ -17,6 +17,6 @@ test:
 		done ;\
 	done
 
-files=monteCarlo.cu graph.py *.h Makefile
+files=monteCarlo.cu graph.py proj6.data *.h Makefile
 zip:
 	zip proj6.zip $(files)
