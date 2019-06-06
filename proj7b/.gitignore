@@ -1,0 +1,4 @@
+/omp
+/simd
+/cuda
+*.o
