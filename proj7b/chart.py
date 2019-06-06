@@ -9,9 +9,17 @@ x = numpy.arange(len(things))
 import matplotlib; matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
-ax.bar(x, data, align='center', color=colors[:4])
+rects = ax.bar(x, data, align='center', color=colors[:4])
 ax.set_xticks(x)
 ax.set_xticklabels(things)
 ax.set_ylabel('KiloAutoCorrelates/second')
-fig.savefig("perf.png")
 
+# Annotate each bar with a number above it displaying the height
+for height, rect in zip(data, rects):
+    ax.annotate(str(height),
+                xy=(rect.get_x() + rect.get_width() / 2, height),
+                xytext=(0, 3),  # use 3 points offset
+                textcoords="offset points",  # in both directions
+                ha='center', va='bottom')
+
+fig.savefig("perf.png")
