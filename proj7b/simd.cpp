@@ -95,5 +95,8 @@ main( int argc, char *argv[ ] )
 		printf("%d\t%f\n", i, sums[i]);
 	}
 
+	delete sums;
+	delete array;
+
 	return 0;
 }
