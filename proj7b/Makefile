@@ -14,7 +14,8 @@ all: omp simd cuda
 read.o: read.cpp Makefile
 
 graphs:
-	python2 graph.py proj6.data
+	python2 plot.py p7cuda.data
+	python2 chart.py
 
 test:
 	./omp 1 >p7omp1.data

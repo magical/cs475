@@ -1,0 +1,9 @@
+./omp 1 >p7omp1.data
+Threads = 1, Array Size =      32768, KiloAutoCorrelates/Second =      32.51
+./omp 8 >p7omp8.data
+Threads = 8, Array Size =      32768, KiloAutoCorrelates/Second =     235.50
+./simd >p7simd.data
+Threads = 1, Array Size =      32768, KiloAutoCorrelates/Second =     124.83
+./cuda >p7cuda.data
+GPU Device 0: "GeForce GTX TITAN Black" with compute capability 3.5
+Array Size =      32768, KiloAutoCorrelates/Second =    1531.17

@@ -13,5 +13,6 @@ import matplotlib; matplotlib.use('cairo')
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 ax.scatter(data[:,0].flatten(), data[:,1].flatten())
-fig.savefig("python.png")
+ax.set(xlabel="shift")
+fig.savefig("wave.png")
 
