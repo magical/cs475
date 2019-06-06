@@ -23,6 +23,6 @@ test:
 	./simd >p7simd.data
 	./cuda >p7cuda.data
 
-files=cuda.cu plot.py *.h Makefile
+files=omp.cpp simd.cpp cuda.cu read.cpp *.h plot.py chart.py *.data Makefile
 zip:
-	zip proj6.zip $(files)
+	zip proj7b.zip $(files)
